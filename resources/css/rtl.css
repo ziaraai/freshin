@@ -1,0 +1,284 @@
+/* RTL Support for Sidebar */
+html[dir="rtl"] [data-slot="sidebar-wrapper"] {
+  direction: rtl;
+}
+
+html[dir="rtl"] [data-slot="sidebar"] {
+  direction: rtl;
+}
+
+/* Fix sidebar positioning for RTL */
+html[dir="rtl"] [data-side="left"] {
+  right: 0;
+  left: auto !important;
+}
+
+html[dir="rtl"] [data-side="right"] {
+  left: 0;
+  right: auto !important;
+}
+
+/* Fix sidebar border for RTL */
+html[dir="rtl"] [data-side="left"] {
+  border-left: 1px solid var(--sidebar-border);
+  border-right: none !important;
+}
+
+html[dir="rtl"] [data-side="right"] {
+  border-right: 1px solid var(--sidebar-border);
+  border-left: none !important;
+}
+
+/* Fix sidebar collapse for RTL */
+html[dir="rtl"] [data-collapsible="offcanvas"][data-side="left"] {
+  right: calc(var(--sidebar-width) * -1) !important;
+  left: auto !important;
+}
+
+html[dir="rtl"] [data-collapsible="offcanvas"][data-side="right"] {
+  left: calc(var(--sidebar-width) * -1) !important;
+  right: auto !important;
+}
+
+/* Fix sidebar rail for RTL */
+html[dir="rtl"] [data-sidebar="rail"] {
+  transform: translateX(50%) !important;
+}
+
+/* Fix sidebar menu items for RTL */
+html[dir="rtl"] [data-sidebar="menu-button"] {
+  text-align: right;
+}
+
+html[dir="rtl"] [data-sidebar="menu-action"] {
+  right: auto;
+  left: 1rem;
+}
+
+html[dir="rtl"] [data-sidebar="menu-badge"] {
+  right: auto;
+  left: 1rem;
+}
+
+/* Fix sidebar menu sub items for RTL */
+html[dir="rtl"] [data-sidebar="menu-sub"],
+[dir="rtl"] [data-sidebar="menu-sub"],
+html[dir="rtl"] [data-slot="sidebar-menu-sub"],
+[dir="rtl"] [data-slot="sidebar-menu-sub"],
+[data-side="right"] [data-sidebar="menu-sub"],
+[data-side="right"] [data-slot="sidebar-menu-sub"],
+[side="right"] [data-sidebar="menu-sub"],
+[side="right"] [data-slot="sidebar-menu-sub"] {
+  border-left: none !important;
+  border-right: 1px solid var(--sidebar-border) !important;
+  margin-left: 0 !important;
+  margin-right: 0.875rem !important;
+  padding-left: 0 !important;
+  padding-right: 0.625rem !important;
+  transform: translateX(-1px) !important;
+}
+
+html[dir="rtl"] [data-sidebar="menu-sub-item"]:has([data-active="true"])::before,
+[dir="rtl"] [data-sidebar="menu-sub-item"]:has([data-active="true"])::before,
+html[dir="rtl"] [data-slot="sidebar-menu-sub-item"]:has([data-active="true"])::before,
+[dir="rtl"] [data-slot="sidebar-menu-sub-item"]:has([data-active="true"])::before,
+[data-side="right"] [data-sidebar="menu-sub-item"]:has([data-active="true"])::before,
+[data-side="right"] [data-slot="sidebar-menu-sub-item"]:has([data-active="true"])::before,
+[side="right"] [data-sidebar="menu-sub-item"]:has([data-active="true"])::before,
+[side="right"] [data-slot="sidebar-menu-sub-item"]:has([data-active="true"])::before {
+  left: auto !important;
+  right: -11px !important;
+}
+
+html[dir="rtl"] [data-sidebar="menu-sub-button"],
+[dir="rtl"] [data-sidebar="menu-sub-button"],
+html[dir="rtl"] [data-slot="sidebar-menu-sub-button"],
+[dir="rtl"] [data-slot="sidebar-menu-sub-button"],
+[data-side="right"] [data-sidebar="menu-sub-button"],
+[data-side="right"] [data-slot="sidebar-menu-sub-button"],
+[side="right"] [data-sidebar="menu-sub-button"],
+[side="right"] [data-slot="sidebar-menu-sub-button"] {
+  transform: translateX(1px) !important;
+  text-align: right !important;
+}
+
+/* Fix sidebar group action for RTL */
+html[dir="rtl"] [data-sidebar="group-action"] {
+  right: auto;
+  left: 0.75rem;
+}
+
+/* Fix sidebar menu item with children for RTL */
+html[dir="rtl"] .group-has-data-[sidebar=menu-action]/menu-item:pr-8 {
+  padding-right: 0.5rem !important;
+  padding-left: 2rem !important;
+}
+
+/* RTL Support for Modals / Dialogs */
+[dir="rtl"] [role="dialog"],
+[role="dialog"][dir="rtl"],
+[dir="rtl"] [data-radix-dialog-content],
+[data-radix-dialog-content][dir="rtl"],
+[data-direction="rtl"][role="dialog"],
+[data-direction="rtl"][data-radix-dialog-content],
+html[dir="rtl"] [role="dialog"],
+html[dir="rtl"] [data-radix-dialog-content] {
+  direction: rtl !important;
+  text-align: right !important;
+}
+
+[dir="rtl"] [role="dialog"] button:has(.lucide-x),
+[role="dialog"][dir="rtl"] button:has(.lucide-x),
+[dir="rtl"] [data-radix-dialog-content] button:has(.lucide-x),
+[data-radix-dialog-content][dir="rtl"] button:has(.lucide-x),
+[data-direction="rtl"] button:has(.lucide-x),
+html[dir="rtl"] [role="dialog"] button:has(.lucide-x),
+html[dir="rtl"] [data-radix-dialog-content] button:has(.lucide-x) {
+  right: auto !important;
+  left: 1rem !important;
+}
+
+[role="dialog"][dir="rtl"] label,
+[dir="rtl"] [role="dialog"] label,
+[data-direction="rtl"] label {
+  text-align: right !important;
+}
+
+[role="dialog"][dir="rtl"] input:not([type="checkbox"]):not([type="radio"]),
+[dir="rtl"] [role="dialog"] input:not([type="checkbox"]):not([type="radio"]),
+[data-direction="rtl"] input:not([type="checkbox"]):not([type="radio"]),
+[role="dialog"][dir="rtl"] textarea,
+[dir="rtl"] [role="dialog"] textarea,
+[data-direction="rtl"] textarea {
+  text-align: right !important;
+  direction: rtl !important;
+}
+
+/* RTL Support: Rotate Lucide arrow and chevron icons 180 degrees in RTL mode */
+html[dir="rtl"] .lucide-arrow-left,
+html[dir="rtl"] .lucide-arrow-right,
+html[dir="rtl"] .lucide-chevron-left,
+html[dir="rtl"] .lucide-chevron-right,
+html[dir="rtl"] .lucide-chevrons-left,
+html[dir="rtl"] .lucide-chevrons-right,
+html[dir="rtl"] .lucide-move-left,
+html[dir="rtl"] .lucide-move-right,
+html[dir="rtl"] .lucide-arrow-left-circle,
+html[dir="rtl"] .lucide-arrow-right-circle,
+html[dir="rtl"] .lucide-circle-arrow-left,
+html[dir="rtl"] .lucide-circle-arrow-right,
+html[dir="rtl"] .lucide-arrow-big-left,
+html[dir="rtl"] .lucide-arrow-big-right,
+html[dir="rtl"] .lucide-arrow-left-square,
+html[dir="rtl"] .lucide-arrow-right-square,
+html[dir="rtl"] .lucide-square-arrow-left,
+html[dir="rtl"] .lucide-square-arrow-right,
+[dir="rtl"] .lucide-arrow-left,
+[dir="rtl"] .lucide-arrow-right,
+[dir="rtl"] .lucide-chevron-left,
+[dir="rtl"] .lucide-chevron-right,
+[dir="rtl"] .lucide-chevrons-left,
+[dir="rtl"] .lucide-chevrons-right,
+[dir="rtl"] .lucide-move-left,
+[dir="rtl"] .lucide-move-right,
+[dir="rtl"] .lucide-arrow-left-circle,
+[dir="rtl"] .lucide-arrow-right-circle,
+[dir="rtl"] .lucide-circle-arrow-left,
+[dir="rtl"] .lucide-circle-arrow-right,
+[dir="rtl"] .lucide-arrow-big-left,
+[dir="rtl"] .lucide-arrow-big-right,
+[dir="rtl"] .lucide-arrow-left-square,
+[dir="rtl"] .lucide-arrow-right-square,
+[dir="rtl"] .lucide-square-arrow-left,
+[dir="rtl"] .lucide-square-arrow-right {
+  transform: rotate(180deg);
+  transform-origin: center;
+}
+
+/* Reset if explicitly inside an LTR container */
+[dir="rtl"] [dir="ltr"] .lucide-arrow-left,
+[dir="rtl"] [dir="ltr"] .lucide-arrow-right,
+[dir="rtl"] [dir="ltr"] .lucide-chevron-left,
+[dir="rtl"] [dir="ltr"] .lucide-chevron-right,
+[dir="rtl"] [dir="ltr"] .lucide-chevrons-left,
+[dir="rtl"] [dir="ltr"] .lucide-chevrons-right,
+[dir="rtl"] [dir="ltr"] .lucide-move-left,
+[dir="rtl"] [dir="ltr"] .lucide-move-right,
+[dir="rtl"] [dir="ltr"] .lucide-arrow-left-circle,
+[dir="rtl"] [dir="ltr"] .lucide-arrow-right-circle,
+[dir="rtl"] [dir="ltr"] .lucide-circle-arrow-left,
+[dir="rtl"] [dir="ltr"] .lucide-circle-arrow-right,
+[dir="rtl"] [dir="ltr"] .lucide-arrow-big-left,
+[dir="rtl"] [dir="ltr"] .lucide-arrow-big-right,
+[dir="rtl"] [dir="ltr"] .lucide-arrow-left-square,
+[dir="rtl"] [dir="ltr"] .lucide-arrow-right-square,
+[dir="rtl"] [dir="ltr"] .lucide-square-arrow-left,
+[dir="rtl"] [dir="ltr"] .lucide-square-arrow-right {
+  transform: none;
+}
+
+/* Allow opting out of auto-rotation with utility classes */
+html[dir="rtl"] .no-rtl-rotate,
+html[dir="rtl"] .rtl-no-rotate,
+[dir="rtl"] .no-rtl-rotate,
+[dir="rtl"] .rtl-no-rotate {
+  transform: none !important;
+}
+
+/* RTL Support for HTML date and time inputs */
+html[dir="rtl"] input[type="date"],
+html[dir="rtl"] input[type="datetime-local"],
+html[dir="rtl"] input[type="time"],
+html[dir="rtl"] input[type="month"],
+[dir="rtl"] input[type="date"],
+[dir="rtl"] input[type="datetime-local"],
+[dir="rtl"] input[type="time"],
+[dir="rtl"] input[type="month"],
+input[dir="rtl"][type="date"],
+input[dir="rtl"][type="datetime-local"],
+input[dir="rtl"][type="time"],
+input[dir="rtl"][type="month"] {
+  direction: rtl !important;
+  text-align: right !important;
+  justify-content: flex-end !important;
+}
+
+html[dir="rtl"] input[type="date"]::-webkit-datetime-edit,
+html[dir="rtl"] input[type="datetime-local"]::-webkit-datetime-edit,
+html[dir="rtl"] input[type="time"]::-webkit-datetime-edit,
+html[dir="rtl"] input[type="month"]::-webkit-datetime-edit,
+[dir="rtl"] input[type="date"]::-webkit-datetime-edit,
+[dir="rtl"] input[type="datetime-local"]::-webkit-datetime-edit,
+[dir="rtl"] input[type="time"]::-webkit-datetime-edit,
+[dir="rtl"] input[type="month"]::-webkit-datetime-edit,
+input[dir="rtl"][type="date"]::-webkit-datetime-edit,
+input[dir="rtl"][type="datetime-local"]::-webkit-datetime-edit,
+input[dir="rtl"][type="time"]::-webkit-datetime-edit,
+input[dir="rtl"][type="month"]::-webkit-datetime-edit {
+  margin-left: auto !important;
+  display: inline-flex !important;
+  flex-direction: row !important;
+}
+
+html[dir="rtl"] input[type="date"]::-webkit-calendar-picker-indicator,
+html[dir="rtl"] input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+html[dir="rtl"] input[type="time"]::-webkit-calendar-picker-indicator,
+html[dir="rtl"] input[type="month"]::-webkit-calendar-picker-indicator,
+[dir="rtl"] input[type="date"]::-webkit-calendar-picker-indicator,
+[dir="rtl"] input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+[dir="rtl"] input[type="time"]::-webkit-calendar-picker-indicator,
+[dir="rtl"] input[type="month"]::-webkit-calendar-picker-indicator,
+input[dir="rtl"][type="date"]::-webkit-calendar-picker-indicator,
+input[dir="rtl"][type="datetime-local"]::-webkit-calendar-picker-indicator,
+input[dir="rtl"][type="time"]::-webkit-calendar-picker-indicator,
+input[dir="rtl"][type="month"]::-webkit-calendar-picker-indicator {
+  margin-left: 0.5rem !important;
+  margin-right: 0 !important;
+  cursor: pointer;
+}
+
+/* RTL Support for Table Headers */
+html[dir="rtl"] th:not(.text-center):not([class*="text-center"]):not([class*="text-left"]):not([class*="text-right"]),
+[dir="rtl"] th:not(.text-center):not([class*="text-center"]):not([class*="text-left"]):not([class*="text-right"]) {
+  text-align: right;
+}
