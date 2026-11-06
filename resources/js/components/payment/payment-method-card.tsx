@@ -32,7 +32,7 @@ export function PaymentMethodCard({
           {icon}
           <span className="font-medium">{title}</span>
         </div>
-        <Switch checked={enabled} onCheckedChange={onToggle} />
+        <Switch aria-label={title} checked={enabled} onCheckedChange={onToggle} />
       </div>
       {enabled && (
         <div className="p-4 space-y-4">

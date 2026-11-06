@@ -348,301 +348,48 @@ if (! function_exists('updatePaymentSetting')) {
 }
 
 if (! function_exists('isPaymentMethodEnabled')) {
-    /**
-     * Check if a payment method is enabled
-     *
-     * @param string $method (stripe, paypal, razorpay, mercadopago, bank)
-     * @param int|null $userId
-     * @return bool
-     */
+    /** Stripe is available for plans and stores; cash on delivery is store-only. */
     function isPaymentMethodEnabled($method, $userId = null, $storeId = null)
     {
-        $settings = getPaymentSettings($userId, $storeId);
-        $key = "is_{$method}_enabled";
+        if (!in_array($method, ['stripe', 'cod'], true)) {
+            return false;
+        }
+        if ($method === 'cod' && $storeId === null) {
+            return false;
+        }
 
-        return isset($settings[$key]) && ($settings[$key] === true || $settings[$key] === '1');
+        $settings = getPaymentSettings($userId, $storeId);
+
+        return filter_var($settings["is_{$method}_enabled"] ?? false, FILTER_VALIDATE_BOOLEAN);
     }
 }
 
 if (! function_exists('getPaymentMethodConfig')) {
-    /**
-     * Get configuration for a specific payment method
-     *
-     * @param string $method (stripe, paypal, razorpay, mercadopago)
-     * @param int|null $userId
-     * @return array
-     */
+    /** Internal payment configuration. Never return this directly to a browser. */
     function getPaymentMethodConfig($method, $userId = null, $storeId = null)
     {
+        if ($method === 'cod') {
+            return ['enabled' => isPaymentMethodEnabled('cod', $userId, $storeId)];
+        }
+        if ($method !== 'stripe') {
+            return [];
+        }
+
         $settings = getPaymentSettings($userId, $storeId);
 
-        switch ($method) {
-            case 'stripe':
-                return [
-                    'enabled' => isPaymentMethodEnabled('stripe', $userId, $storeId),
-                    'key' => $settings['stripe_key'] ?? null,
-                    'secret' => $settings['stripe_secret'] ?? null,
-                ];
-
-            case 'paypal':
-                return [
-                    'enabled' => isPaymentMethodEnabled('paypal', $userId, $storeId),
-                    'mode' => $settings['paypal_mode'] ?? 'sandbox',
-                    'client_id' => $settings['paypal_client_id'] ?? null,
-                    'secret' => $settings['paypal_secret_key'] ?? null,
-                ];
-
-            case 'razorpay':
-                return [
-                    'enabled' => isPaymentMethodEnabled('razorpay', $userId, $storeId),
-                    'key' => $settings['razorpay_key'] ?? null,
-                    'secret' => $settings['razorpay_secret'] ?? null,
-                ];
-
-            case 'mercadopago':
-                return [
-                    'enabled' => isPaymentMethodEnabled('mercadopago', $userId, $storeId),
-                    'mode' => $settings['mercadopago_mode'] ?? 'sandbox',
-                    'access_token' => $settings['mercadopago_access_token'] ?? null,
-                ];
-
-            case 'paystack':
-                return [
-                    'enabled' => isPaymentMethodEnabled('paystack', $userId, $storeId),
-                    'public_key' => $settings['paystack_public_key'] ?? null,
-                    'secret_key' => $settings['paystack_secret_key'] ?? null,
-                ];
-
-            case 'flutterwave':
-                return [
-                    'enabled' => isPaymentMethodEnabled('flutterwave', $userId, $storeId),
-                    'public_key' => $settings['flutterwave_public_key'] ?? null,
-                    'secret_key' => $settings['flutterwave_secret_key'] ?? null,
-                ];
-
-            case 'cod':
-                return [
-                    'enabled' => isPaymentMethodEnabled('cod', $userId, $storeId),
-                ];
-
-            case 'bank':
-                return [
-                    'enabled' => isPaymentMethodEnabled('bank', $userId, $storeId),
-                    'details' => $settings['bank_detail'] ?? null,
-                ];
-
-            case 'paytabs':
-                return [
-                    'enabled' => isPaymentMethodEnabled('paytabs', $userId, $storeId),
-                    'mode' => $settings['paytabs_mode'] ?? 'sandbox',
-                    'profile_id' => $settings['paytabs_profile_id'] ?? null,
-                    'server_key' => $settings['paytabs_server_key'] ?? null,
-                    'region' => $settings['paytabs_region'] ?? 'ARE',
-                ];
-
-            case 'skrill':
-                return [
-                    'enabled' => isPaymentMethodEnabled('skrill', $userId, $storeId),
-                    'merchant_id' => $settings['skrill_merchant_id'] ?? null,
-                    'secret_word' => $settings['skrill_secret_word'] ?? null,
-                ];
-
-            case 'coingate':
-                return [
-                    'enabled' => isPaymentMethodEnabled('coingate', $userId, $storeId),
-                    'mode' => $settings['coingate_mode'] ?? 'sandbox',
-                    'api_token' => $settings['coingate_api_token'] ?? null,
-                ];
-
-            case 'payfast':
-                return [
-                    'enabled' => isPaymentMethodEnabled('payfast', $userId, $storeId),
-                    'mode' => $settings['payfast_mode'] ?? 'sandbox',
-                    'merchant_id' => $settings['payfast_merchant_id'] ?? null,
-                    'merchant_key' => $settings['payfast_merchant_key'] ?? null,
-                    'passphrase' => $settings['payfast_passphrase'] ?? null,
-                ];
-
-            case 'tap':
-                return [
-                    'enabled' => isPaymentMethodEnabled('tap', $userId, $storeId),
-                    'secret_key' => $settings['tap_secret_key'] ?? null,
-                ];
-
-            case 'xendit':
-                return [
-                    'enabled' => isPaymentMethodEnabled('xendit', $userId, $storeId),
-                    'api_key' => $settings['xendit_api_key'] ?? null,
-                ];
-
-            case 'paytr':
-                return [
-                    'enabled' => isPaymentMethodEnabled('paytr', $userId, $storeId),
-                    'merchant_id' => $settings['paytr_merchant_id'] ?? null,
-                    'merchant_key' => $settings['paytr_merchant_key'] ?? null,
-                    'merchant_salt' => $settings['paytr_merchant_salt'] ?? null,
-                ];
-
-            case 'mollie':
-                return [
-                    'enabled' => isPaymentMethodEnabled('mollie', $userId, $storeId),
-                    'api_key' => $settings['mollie_api_key'] ?? null,
-                ];
-
-            case 'toyyibpay':
-                return [
-                    'enabled' => isPaymentMethodEnabled('toyyibpay', $userId, $storeId),
-                    'category_code' => $settings['toyyibpay_category_code'] ?? null,
-                    'secret_key' => $settings['toyyibpay_secret_key'] ?? null,
-                    'mode' => $settings['toyyibpay_mode'] ?? 'sandbox',
-                ];
-
-            case 'cashfree':
-                return [
-                    'enabled' => isPaymentMethodEnabled('cashfree', $userId, $storeId),
-                    'mode' => $settings['cashfree_mode'] ?? 'sandbox',
-                    'public_key' => $settings['cashfree_public_key'] ?? null,
-                    'secret_key' => $settings['cashfree_secret_key'] ?? null,
-                ];
-
-            case 'iyzipay':
-                return [
-                    'enabled' => isPaymentMethodEnabled('iyzipay', $userId, $storeId),
-                    'mode' => $settings['iyzipay_mode'] ?? 'sandbox',
-                    'public_key' => $settings['iyzipay_public_key'] ?? null,
-                    'secret_key' => $settings['iyzipay_secret_key'] ?? null,
-                ];
-
-            case 'benefit':
-                return [
-                    'enabled' => isPaymentMethodEnabled('benefit', $userId, $storeId),
-                    'mode' => $settings['benefit_mode'] ?? 'sandbox',
-                    'public_key' => $settings['benefit_public_key'] ?? null,
-                    'secret_key' => $settings['benefit_secret_key'] ?? null,
-                ];
-
-            case 'ozow':
-                return [
-                    'enabled' => isPaymentMethodEnabled('ozow', $userId, $storeId),
-                    'mode' => $settings['ozow_mode'] ?? 'sandbox',
-                    'site_key' => $settings['ozow_site_key'] ?? null,
-                    'private_key' => $settings['ozow_private_key'] ?? null,
-                    'api_key' => $settings['ozow_api_key'] ?? null,
-                ];
-
-            case 'easebuzz':
-                return [
-                    'enabled' => isPaymentMethodEnabled('easebuzz', $userId, $storeId),
-                    'merchant_key' => $settings['easebuzz_merchant_key'] ?? null,
-                    'salt_key' => $settings['easebuzz_salt_key'] ?? null,
-                    'environment' => $settings['easebuzz_environment'] ?? 'test',
-                ];
-
-            case 'khalti':
-                return [
-                    'enabled' => isPaymentMethodEnabled('khalti', $userId, $storeId),
-                    'public_key' => $settings['khalti_public_key'] ?? null,
-                    'secret_key' => $settings['khalti_secret_key'] ?? null,
-                ];
-
-            case 'authorizenet':
-                return [
-                    'enabled' => isPaymentMethodEnabled('authorizenet', $userId, $storeId),
-                    'mode' => $settings['authorizenet_mode'] ?? 'sandbox',
-                    'merchant_id' => $settings['authorizenet_merchant_id'] ?? null,
-                    'transaction_key' => $settings['authorizenet_transaction_key'] ?? null,
-                    'supported_countries' => ['US', 'CA', 'GB', 'AU'],
-                    'supported_currencies' => ['USD', 'CAD', 'CHF', 'DKK', 'EUR', 'GBP', 'NOK', 'PLN', 'SEK', 'AUD', 'NZD'],
-                ];
-
-            case 'fedapay':
-                return [
-                    'enabled' => isPaymentMethodEnabled('fedapay', $userId, $storeId),
-                    'mode' => $settings['fedapay_mode'] ?? 'sandbox',
-                    'public_key' => $settings['fedapay_public_key'] ?? null,
-                    'secret_key' => $settings['fedapay_secret_key'] ?? null,
-                ];
-
-            case 'payhere':
-                return [
-                    'enabled' => isPaymentMethodEnabled('payhere', $userId, $storeId),
-                    'mode' => $settings['payhere_mode'] ?? 'sandbox',
-                    'merchant_id' => $settings['payhere_merchant_id'] ?? null,
-                    'merchant_secret' => $settings['payhere_merchant_secret'] ?? null,
-                    'app_id' => $settings['payhere_app_id'] ?? null,
-                    'app_secret' => $settings['payhere_app_secret'] ?? null,
-                ];
-
-            case 'cinetpay':
-                return [
-                    'enabled' => isPaymentMethodEnabled('cinetpay', $userId, $storeId),
-                    'site_id' => $settings['cinetpay_site_id'] ?? null,
-                    'api_key' => $settings['cinetpay_api_key'] ?? null,
-                    'secret_key' => $settings['cinetpay_secret_key'] ?? null,
-                ];
-
-            case 'midtrans':
-                return [
-                    'enabled' => isPaymentMethodEnabled('midtrans', $userId, $storeId),
-                    'mode' => $settings['midtrans_mode'] ?? 'sandbox',
-                    'client_key' => $settings['midtrans_client_key'] ?? null,
-                    'secret_key' => $settings['midtrans_secret_key'] ?? null,
-                ];
-
-            case 'yookassa':
-                return [
-                    'enabled' => isPaymentMethodEnabled('yookassa', $userId, $storeId),
-                    'shop_id' => $settings['yookassa_shop_id'] ?? null,
-                    'secret_key' => $settings['yookassa_secret_key'] ?? null,
-                ];
-
-            case 'whatsapp':
-                return [
-                    'enabled' => isPaymentMethodEnabled('whatsapp', $userId, $storeId),
-                    'number' => $settings['whatsapp_number'] ?? null,
-                    'display_name' => 'WhatsApp',
-                    'description' => 'Send order confirmation via WhatsApp',
-                ];
-
-            case 'telegram':
-                return [
-                    'enabled' => isPaymentMethodEnabled('telegram', $userId, $storeId),
-                    'bot_token' => $settings['telegram_bot_token'] ?? null,
-                    'chat_id' => $settings['telegram_chat_id'] ?? null,
-                    'display_name' => 'Telegram',
-                    'description' => 'Send order confirmation via Telegram',
-                ];
-
-            default:
-                return [];
-        }
+        return [
+            'enabled' => isPaymentMethodEnabled('stripe', $userId, $storeId),
+            'key' => $settings['stripe_key'] ?? null,
+            'secret' => $settings['stripe_secret'] ?? null,
+        ];
     }
 }
 
 if (! function_exists('getEnabledPaymentMethods')) {
-    /**
-     * Get all enabled payment methods
-     *
-     * @param int|null $userId
-     * @return array
-     */
     function getEnabledPaymentMethods($userId = null, $storeId = null)
     {
-        $methods = ['stripe', 'paypal', 'razorpay', 'mercadopago', 'paystack', 'flutterwave', 'bank', 'paytabs', 'skrill', 'coingate', 'payfast', 'tap', 'xendit', 'paytr', 'mollie', 'toyyibpay', 'cashfree', 'iyzipay', 'benefit', 'ozow', 'easebuzz', 'khalti', 'authorizenet', 'fedapay', 'payhere', 'cinetpay', 'midtrans', 'yookassa'];
-
-        // Add COD, WhatsApp and Telegram only for company users (not superadmin)
-        if ($userId) {
-            $user = \App\Models\User::find($userId);
-            if ($user && $user->type === 'company') {
-                array_unshift($methods, 'cod'); // Add COD at beginning
-                $methods[] = 'whatsapp'; // Add WhatsApp
-                $methods[] = 'telegram'; // Add Telegram at end
-            }
-        }
-
         $enabled = [];
-
-        foreach ($methods as $method) {
+        foreach (['stripe', 'cod'] as $method) {
             if (isPaymentMethodEnabled($method, $userId, $storeId)) {
                 $enabled[$method] = getPaymentMethodConfig($method, $userId, $storeId);
             }
@@ -653,281 +400,21 @@ if (! function_exists('getEnabledPaymentMethods')) {
 }
 
 if (! function_exists('validatePaymentMethodConfig')) {
-    /**
-     * Validate payment method configuration
-     *
-     * @param string $method
-     * @param array $config
-     * @return array [valid => bool, errors => array]
-     */
     function validatePaymentMethodConfig($method, $config)
     {
         $errors = [];
-
-        switch ($method) {
-            case 'stripe':
-                if (empty($config['key'])) {
-                    $errors[] = 'Stripe publishable key is required';
-                }
-                if (empty($config['secret'])) {
-                    $errors[] = 'Stripe secret key is required';
-                }
-                break;
-
-            case 'paypal':
-                if (empty($config['client_id'])) {
-                    $errors[] = 'PayPal client ID is required';
-                }
-                if (empty($config['secret'])) {
-                    $errors[] = 'PayPal secret key is required';
-                }
-                break;
-
-            case 'razorpay':
-                if (empty($config['key'])) {
-                    $errors[] = 'Razorpay key ID is required';
-                }
-                if (empty($config['secret'])) {
-                    $errors[] = 'Razorpay secret key is required';
-                }
-                break;
-
-            case 'mercadopago':
-                if (empty($config['access_token'])) {
-                    $errors[] = 'MercadoPago access token is required';
-                }
-                break;
-
-            case 'bank':
-                if (empty($config['details'])) {
-                    $errors[] = 'Bank details are required';
-                }
-                break;
-
-            case 'paytabs':
-                if (empty($config['server_key'])) {
-                    $errors[] = 'PayTabs server key is required';
-                }
-                if (empty($config['profile_id'])) {
-                    $errors[] = 'PayTabs profile id is required';
-                }
-                if (empty($config['region'])) {
-                    $errors[] = 'PayTabs region is required';
-                }
-                break;
-
-            case 'skrill':
-                if (empty($config['merchant_id'])) {
-                    $errors[] = 'Skrill merchant ID is required';
-                }
-                if (empty($config['secret_word'])) {
-                    $errors[] = 'Skrill secret word is required';
-                }
-                break;
-
-            case 'coingate':
-                if (empty($config['api_token'])) {
-                    $errors[] = 'CoinGate API token is required';
-                }
-                break;
-
-            case 'payfast':
-                if (empty($config['merchant_id'])) {
-                    $errors[] = 'Payfast merchant ID is required';
-                }
-                if (empty($config['merchant_key'])) {
-                    $errors[] = 'Payfast merchant key is required';
-                }
-                break;
-
-            case 'tap':
-                if (empty($config['secret_key'])) {
-                    $errors[] = 'Tap secret key is required';
-                }
-                break;
-
-            case 'xendit':
-                if (empty($config['api_key'])) {
-                    $errors[] = 'Xendit api key is required';
-                }
-                break;
-
-            case 'paytr':
-                if (empty($config['merchant_id'])) {
-                    $errors[] = 'PayTR merchant ID is required';
-                }
-                if (empty($config['merchant_key'])) {
-                    $errors[] = 'PayTR merchant key is required';
-                }
-                if (empty($config['merchant_salt'])) {
-                    $errors[] = 'PayTR merchant salt is required';
-                }
-                break;
-
-            case 'mollie':
-                if (empty($config['api_key'])) {
-                    $errors[] = 'Mollie API key is required';
-                }
-                break;
-
-            case 'toyyibpay':
-                if (empty($config['category_code'])) {
-                    $errors[] = 'toyyibPay category code is required';
-                }
-                if (empty($config['secret_key'])) {
-                    $errors[] = 'toyyibPay secret key is required';
-                }
-                break;
-
-            case 'cashfree':
-                if (empty($config['public_key'])) {
-                    $errors[] = 'Cashfree App ID is required';
-                }
-                if (empty($config['secret_key'])) {
-                    $errors[] = 'Cashfree Secret Key is required';
-                }
-                break;
-
-            case 'iyzipay':
-                if (empty($config['public_key'])) {
-                    $errors[] = 'Iyzipay API key is required';
-                }
-                if (empty($config['secret_key'])) {
-                    $errors[] = 'Iyzipay secret key is required';
-                }
-                break;
-
-            case 'benefit':
-                if (empty($config['public_key'])) {
-                    $errors[] = 'Benefit API key is required';
-                }
-                if (empty($config['secret_key'])) {
-                    $errors[] = 'Benefit secret key is required';
-                }
-                break;
-
-            case 'ozow':
-                if (empty($config['site_key'])) {
-                    $errors[] = 'Ozow site key is required';
-                }
-                if (empty($config['private_key'])) {
-                    $errors[] = 'Ozow private key is required';
-                }
-                break;
-
-            case 'easebuzz':
-                if (empty($config['merchant_key'])) {
-                    $errors[] = 'Easebuzz merchant key is required';
-                }
-                if (empty($config['salt_key'])) {
-                    $errors[] = 'Easebuzz salt key is required';
-                }
-                break;
-
-            case 'khalti':
-                if (empty($config['public_key'])) {
-                    $errors[] = 'Khalti public key is required';
-                }
-                if (empty($config['secret_key'])) {
-                    $errors[] = 'Khalti secret key is required';
-                }
-                break;
-
-            case 'authorizenet':
-                if (empty($config['merchant_id'])) {
-                    $errors[] = 'AuthorizeNet merchant ID is required';
-                }
-                if (empty($config['transaction_key'])) {
-                    $errors[] = 'AuthorizeNet transaction key is required';
-                }
-                break;
-
-            case 'fedapay':
-                if (empty($config['public_key'])) {
-                    $errors[] = 'FedaPay public key is required';
-                }
-                if (empty($config['secret_key'])) {
-                    $errors[] = 'FedaPay secret key is required';
-                }
-                break;
-
-            case 'payhere':
-                if (empty($config['merchant_id'])) {
-                    $errors[] = 'PayHere merchant ID is required';
-                }
-                if (empty($config['merchant_secret'])) {
-                    $errors[] = 'PayHere merchant secret is required';
-                }
-                break;
-
-            case 'cinetpay':
-                if (empty($config['site_id'])) {
-                    $errors[] = 'CinetPay site ID is required';
-                }
-                if (empty($config['api_key'])) {
-                    $errors[] = 'CinetPay API key is required';
-                }
-                break;
-
-            case 'paiement':
-                if (empty($config['merchant_id'])) {
-                    $errors[] = 'Paiement Pro merchant ID is required';
-                }
-                break;
-
-            case 'nepalste':
-                if (empty($config['public_key'])) {
-                    $errors[] = 'Nepalste public key is required';
-                }
-                if (empty($config['secret_key'])) {
-                    $errors[] = 'Nepalste secret key is required';
-                }
-                break;
-
-            case 'yookassa':
-                if (empty($config['shop_id'])) {
-                    $errors[] = 'YooKassa shop ID is required';
-                }
-                if (empty($config['secret_key'])) {
-                    $errors[] = 'YooKassa secret key is required';
-                }
-                break;
-
-            case 'midtrans':
-                if (empty($config['secret_key'])) {
-                    $errors[] = 'Midtrans secret key is required';
-                }
-                break;
-
-            case 'aamarpay':
-                if (empty($config['store_id'])) {
-                    $errors[] = 'Aamarpay store ID is required';
-                }
-                if (empty($config['signature'])) {
-                    $errors[] = 'Aamarpay signature is required';
-                }
-                break;
-
-            case 'whatsapp':
-                if (empty($config['number'])) {
-                    $errors[] = 'WhatsApp phone number is required';
-                }
-                break;
-
-            case 'telegram':
-                if (empty($config['bot_token'])) {
-                    $errors[] = 'Telegram bot token is required';
-                }
-                if (empty($config['chat_id'])) {
-                    $errors[] = 'Telegram chat ID is required';
-                }
-                break;
+        if ($method === 'stripe') {
+            if (empty($config['key'])) {
+                $errors[] = 'Stripe publishable key is required';
+            }
+            if (empty($config['secret'])) {
+                $errors[] = 'Stripe secret key is required';
+            }
+        } elseif ($method !== 'cod') {
+            $errors[] = 'This payment method is no longer supported';
         }
 
-        return [
-            'valid' => empty($errors),
-            'errors' => $errors
-        ];
+        return ['valid' => empty($errors), 'errors' => $errors];
     }
 }
 

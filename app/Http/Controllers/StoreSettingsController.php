@@ -50,6 +50,16 @@ class StoreSettingsController extends Controller
             'settings' => 'required|array',
             'settings.custom_css' => 'nullable|string|max:50000',
             'settings.custom_javascript' => 'nullable|string|max:50000',
+            'settings.ordering_schedule' => 'sometimes|required|array:enabled,timezone,open_days,opens_at,closes_at,delivery_days,advance_days',
+            'settings.ordering_schedule.enabled' => 'required_with:settings.ordering_schedule|boolean',
+            'settings.ordering_schedule.timezone' => 'required_with:settings.ordering_schedule|in:Europe/London',
+            'settings.ordering_schedule.open_days' => 'required_with:settings.ordering_schedule|array|min:1|max:7',
+            'settings.ordering_schedule.open_days.*' => 'required|integer|between:1,7|distinct',
+            'settings.ordering_schedule.opens_at' => 'required_with:settings.ordering_schedule|date_format:H:i',
+            'settings.ordering_schedule.closes_at' => 'required_with:settings.ordering_schedule|date_format:H:i|after:settings.ordering_schedule.opens_at',
+            'settings.ordering_schedule.delivery_days' => 'required_with:settings.ordering_schedule|array|min:1|max:7',
+            'settings.ordering_schedule.delivery_days.*' => 'required|integer|between:1,7|distinct',
+            'settings.ordering_schedule.advance_days' => 'required_with:settings.ordering_schedule|integer|between:1,90',
         ]);
         
         // Get all settings from request (not just validated ones)
@@ -119,6 +129,14 @@ class StoreSettingsController extends Controller
 
         // Use all settings instead of just validated ones
         $settingsToSave = array_merge($validated['settings'], $allSettings);
+        if (isset($settingsToSave['ordering_schedule'])) {
+            $schedule = $validated['settings']['ordering_schedule'];
+            $schedule['enabled'] = (bool) $schedule['enabled'];
+            $schedule['open_days'] = array_map('intval', $schedule['open_days']);
+            $schedule['delivery_days'] = array_map('intval', $schedule['delivery_days']);
+            $schedule['advance_days'] = (int) $schedule['advance_days'];
+            $settingsToSave['ordering_schedule'] = $schedule;
+        }
         
         StoreConfiguration::updateConfiguration($storeId, $settingsToSave);
 

@@ -1,3 +1,4 @@
+import { DeliveryDate } from '@/components/OrderingSchedule';
 import React from 'react';
 import { formatCurrency } from '../../../utils/currency-formatter';
 import { X, Package, User, MapPin, ShoppingCart, Download, Calendar, CreditCard, Truck } from 'lucide-react';
@@ -99,6 +100,7 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ onClose, o
 
           {/* Content */}
           <div className="flex-1 overflow-y-auto">
+            {order.delivery_date && <div className="mx-4 mt-4 rounded-lg bg-white px-4 py-1 text-stone-900"><DeliveryDate date={order.delivery_date} /></div>}
             {/* Status Banner */}
             <div className="p-4 md:p-6 bg-white border-b">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">

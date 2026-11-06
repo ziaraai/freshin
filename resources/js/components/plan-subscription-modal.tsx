@@ -48,7 +48,7 @@ export function PlanSubscriptionModal({
     router.visit(route('plans.index'));
   };
 
-  const enabledPaymentMethods = paymentMethods.filter(method => method.enabled);
+  const enabledPaymentMethods = paymentMethods.filter(method => method.id === 'stripe' && method.enabled);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>

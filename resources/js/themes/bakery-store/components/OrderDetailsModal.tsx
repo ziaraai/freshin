@@ -1,3 +1,4 @@
+import { DeliveryDate } from '@/components/OrderingSchedule';
 import React from 'react';
 import { X, Package, MapPin, Calendar, CreditCard, Receipt, Download } from 'lucide-react';
 import { formatCurrency } from '../../../utils/currency-formatter';
@@ -98,6 +99,7 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ onClose, o
 
           {/* Content */}
           <div className="flex-1 overflow-y-auto bg-stone-50 min-h-0">
+            {order.delivery_date && <div className="mx-4 mt-4 rounded-lg bg-white px-4 py-1 text-stone-900"><DeliveryDate date={order.delivery_date} /></div>}
             {/* Hero Card */}
             <div className="bg-stone-50 rounded-3xl p-6 m-4 border-2 border-stone-200 shadow-lg">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">

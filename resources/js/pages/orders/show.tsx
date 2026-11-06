@@ -1,3 +1,4 @@
+import { DeliveryDate } from '@/components/OrderingSchedule';
 import React from 'react';
 import { PageTemplate } from '@/components/page-template';
 import {
@@ -44,6 +45,7 @@ interface OrderShowProps {
     id: number;
     orderNumber: string;
     date: string;
+    delivery_date?: string | null;
     status: string;
     paymentStatus: string;
     paymentMethod: string;
@@ -571,6 +573,7 @@ export default function ShowOrder({ order }: OrderShowProps) {
                 </div>
               </CardHeader>
               <CardContent className="space-y-4 p-4 sm:p-5">
+                <DeliveryDate date={order.delivery_date} />
                 {/* Method & Tracking */}
                 <div className="space-y-2.5">
                   <div className="flex items-center justify-between text-xs sm:text-sm">

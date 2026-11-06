@@ -1,11 +1,9 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { router } from '@inertiajs/react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from '@/components/custom-toast';
-import { handleOrderPlacement as handleRazorpayOrder } from '@/utils/razorpay-payment';
-import { handleCashfreePayment } from '@/utils/cashfree-payment';
-import { handleFlutterwavePayment } from '@/utils/flutterwave-payment';
 import { generateStoreUrl } from '@/utils/store-url-helper';
+import { useStore } from './StoreContext';
+import { useCart } from './CartContext';
 
 // Country dropdown component
 const CountryDropdown: React.FC<{
@@ -240,6 +238,10 @@ interface CustomerInfo {
 }
 
 interface CheckoutContextType {
+  deliveryDate: string;
+  deliveryDateError: string;
+  orderingUnavailable: boolean;
+  setDeliveryDate: (date: string) => void;
   step: number;
   customerInfo: CustomerInfo;
   couponCode: string;
@@ -257,9 +259,6 @@ interface CheckoutContextType {
   countryId?: number;
   stateId?: number;
   cityId?: number;
-  bankTransferFile: File | null;
-  whatsappNumber: string;
-  whatsappError: string;
   setStep: (step: number) => void;
   setCouponCode: (code: string) => void;
   setSelectedShipping: (id: string) => void;
@@ -268,13 +267,10 @@ interface CheckoutContextType {
   handleNextStep: () => void;
   handlePrevStep: () => void;
   handleApplyCoupon: (subtotal: number) => Promise<void>;
-  handlePlaceOrder: (total: number) => Promise<void>;
+  handlePlaceOrder: () => Promise<void>;
   setCountryId: (id?: number) => void;
   setStateId: (id?: number) => void;
   setCityId: (id?: number) => void;
-  setBankTransferFile: (file: File | null) => void;
-  setWhatsappNumber: (number: string) => void;
-  setWhatsappError: (error: string) => void;
   CountryDropdown: React.FC<{ value: string; onChange: (value: string, id?: number) => void; className?: string; }>;
   StateDropdown: React.FC<{ countryId?: number; value: string; onChange: (value: string, id?: number) => void; className?: string; disabled?: boolean; }>;
   CityDropdown: React.FC<{ stateId?: number; value: string; onChange: (value: string, id?: number) => void; className?: string; disabled?: boolean; }>;
@@ -307,6 +303,20 @@ export const CheckoutProvider: React.FC<CheckoutProviderProps> = ({
   store,
   onOrderComplete
 }) => {
+  const { clearCart } = useCart();
+  const { orderingSchedule, orderingUnavailable, scheduleError, refreshOrderingSchedule } = useStore();
+  const [deliveryDate, updateDeliveryDate] = useState('');
+  const [deliveryDateError, setDeliveryDateError] = useState('');
+  const setDeliveryDate = (date: string) => {
+    updateDeliveryDate(date);
+    setDeliveryDateError('');
+  };
+  useEffect(() => {
+    if (deliveryDate && orderingSchedule?.enabled && !orderingSchedule.delivery_dates.some(day => day.value === deliveryDate)) {
+      updateDeliveryDate('');
+      setDeliveryDateError('That delivery date is no longer available. Please choose another day.');
+    }
+  }, [deliveryDate, orderingSchedule]);
   const [step, setStep] = useState(1);
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo>({
     firstName: isLoggedIn && userProfile ? userProfile.first_name : '',
@@ -334,36 +344,6 @@ export const CheckoutProvider: React.FC<CheckoutProviderProps> = ({
   const [countryId, setCountryId] = useState<number | undefined>();
   const [stateId, setStateId] = useState<number | undefined>();
   const [cityId, setCityId] = useState<number | undefined>();
-  const [bankTransferFile, setBankTransferFile] = useState<File | null>(null);
-  const [whatsappNumber, setWhatsappNumber] = useState('');
-  const [whatsappError, setWhatsappError] = useState('');
-
-  // Helper function to get proper store URL
-  const getStoreUrl = () => {
-    const currentStore = (window as any).page?.props?.store;
-    if (!currentStore) {
-      return generateStoreUrl('store.home', store);
-    }
-
-    const protocol = window.location.protocol;
-    const host = window.location.hostname;
-
-    // Check if we're on a custom domain
-    if (currentStore.enable_custom_domain && currentStore.custom_domain === host) {
-      return `${protocol}//${currentStore.custom_domain}`;
-    }
-
-    // Check if we're on a custom subdomain
-    if (currentStore.enable_custom_subdomain && host.includes('.')) {
-      const subdomain = host.split('.')[0];
-      if (currentStore.custom_subdomain === subdomain) {
-        return `${protocol}//${host}`;
-      }
-    }
-
-    // Default route
-    return generateStoreUrl('store.home', store);
-  };
 
   // Initialize location data when user profile is available
   useEffect(() => {
@@ -429,6 +409,14 @@ export const CheckoutProvider: React.FC<CheckoutProviderProps> = ({
   };
 
   const handleNextStep = () => {
+    if (orderingUnavailable) {
+      toast.error(scheduleError || (orderingSchedule?.is_open ? 'Checking ordering hours. Please try again.' : orderingSchedule?.message) || 'Ordering is currently unavailable. Please try again.');
+      return;
+    }
+    if (orderingSchedule?.enabled && !orderingSchedule.delivery_dates.some(day => day.value === deliveryDate)) {
+      setDeliveryDateError('Please choose an available delivery date.');
+      return;
+    }
     if (step === 1) {
       let hasErrors = false;
 
@@ -519,6 +507,8 @@ export const CheckoutProvider: React.FC<CheckoutProviderProps> = ({
     if (!store?.id) return;
 
     setLoadingPayments(true);
+    setPaymentMethods([]);
+    setSelectedPayment('');
     try {
       const response = await fetch(`${route('api.payment.methods')}?store_id=${store.id}`, {
         headers: {
@@ -528,7 +518,9 @@ export const CheckoutProvider: React.FC<CheckoutProviderProps> = ({
 
       if (response.ok) {
         const data = await response.json();
-        setPaymentMethods(data.payment_methods || []);
+        const methods = (data.payment_methods || []).filter((method: { name: string }) => ['stripe', 'cod'].includes(method.name));
+        setPaymentMethods(methods);
+        setSelectedPayment(methods.find((method: { name: string }) => method.name === 'stripe')?.name ?? methods[0]?.name ?? '');
       }
     } catch (error) {
       console.error('Failed to load payment methods:', error);
@@ -537,49 +529,28 @@ export const CheckoutProvider: React.FC<CheckoutProviderProps> = ({
     }
   };
 
-  const handlePlaceOrder = async (total: number) => {
+  const handlePlaceOrder = async () => {
     if (isPlacingOrder) return;
-
-    // Validate bank transfer file if payment method is bank
-    if (selectedPayment === 'bank') {
-      if (!bankTransferFile) {
-        toast.error('Please upload payment receipt/proof for bank transfer');
-        return;
-      }
-
-      // Validate file size (max 5MB)
-      if (bankTransferFile.size > 5 * 1024 * 1024) {
-        toast.error('File size must be less than 5MB');
-        return;
-      }
-
-      // Validate file type
-      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
-      if (!allowedTypes.includes(bankTransferFile.type)) {
-        toast.error('Only JPG, PNG and PDF files are allowed');
-        return;
-      }
-    }
-
-    // Validate WhatsApp number if payment method is whatsapp
-    if (selectedPayment === 'whatsapp') {
-      if (!whatsappNumber.trim()) {
-        toast.error('WhatsApp number is required');
-        return;
-      }
-
-      // Basic phone number validation (digits only, 10-15 characters)
-      const phoneRegex = /^[+]?[0-9]{10,15}$/;
-      if (!phoneRegex.test(whatsappNumber.replace(/\s+/g, ''))) {
-        toast.error('Please enter a valid WhatsApp number');
-        return;
-      }
+    if (!['stripe', 'cod'].includes(selectedPayment) || !paymentMethods.some(method => method.name === selectedPayment)) {
+      toast.error('Please choose an available payment method.');
+      return;
     }
 
     setIsPlacingOrder(true);
-
     try {
+      // Recheck before placing the order; a tab can stay open past closing time.
+      const currentSchedule = await refreshOrderingSchedule();
+      if (currentSchedule.enabled && !currentSchedule.is_open) {
+        toast.error(currentSchedule.message);
+        return;
+      }
+      if (currentSchedule.enabled && !currentSchedule.delivery_dates.some(day => day.value === deliveryDate)) {
+        setDeliveryDateError('Please choose an available delivery date.');
+        toast.error('Please choose an available delivery date.');
+        return;
+      }
       const orderData = {
+        delivery_date: currentSchedule.enabled ? deliveryDate : undefined,
         store_id: parseInt(store?.id?.toString() || '0'),
         customer_first_name: customerInfo.firstName,
         customer_last_name: customerInfo.lastName,
@@ -599,206 +570,52 @@ export const CheckoutProvider: React.FC<CheckoutProviderProps> = ({
         shipping_method_id: selectedShipping ? parseInt(selectedShipping) : undefined,
         notes: '',
         coupon_code: appliedCoupon?.code || undefined,
-        whatsapp_number: selectedPayment === 'whatsapp' ? whatsappNumber : undefined,
       };
 
-      // Use Razorpay utility for Razorpay payments
-      if (selectedPayment === 'razorpay') {
-        await handleRazorpayOrder(
-          orderData,
-          store,
-          (orderNumber: string) => {
-            // Success callback
-            const storeUrl = getStoreUrl();
-            window.location.href = storeUrl + '?payment_status=success&order_number=' + orderNumber;
-          },
-          (error: string) => {
-            // Error callback
-            toast.error(error);
-            setIsPlacingOrder(false);
-          }
-        );
-        return;
-      }
-
-      // Use Cashfree utility for Cashfree payments
-      if (selectedPayment === 'cashfree') {
-        const result = await handleCashfreePayment(orderData, store);
-        if (!result.success) {
-          toast.error(result.error || 'Cashfree payment failed');
-          setIsPlacingOrder(false);
-        } else {
-          setIsPlacingOrder(false);
-        }
-        return;
-      }
-
-      // Use Flutterwave utility for Flutterwave payments
-      if (selectedPayment === 'flutterwave') {
-        const formData = new FormData();
-        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-        if (csrfToken) formData.append('_token', csrfToken);
-        Object.entries(orderData).forEach(([key, value]) => {
-          if (value !== undefined && value !== null) formData.append(key, value.toString());
-        });
-
-        const response = await fetch(generateStoreUrl('store.order.place', store), {
-          method: 'POST',
-          headers: { 'X-Requested-With': 'XMLHttpRequest' },
-          body: formData,
-        });
-        const data = await response.json();
-
-        if (response.ok && data.success && data.payment_method === 'flutterwave') {
-          try {
-            await handleFlutterwavePayment({
-              public_key: data.public_key,
-              tx_ref: data.tx_ref,
-              amount: data.amount,
-              currency: data.currency,
-              customer_email: data.customer_email,
-              customer_name: data.customer_name,
-              customer_phone: data.customer_phone,
-              redirect_url: data.redirect_url,
-              order_id: data.order_id,
-              order_number: data.order_number,
-            });
-          } catch (error) {
-            toast.error('Flutterwave payment failed');
-          }
-        } else {
-          toast.error(data.message || 'Failed to initialize Flutterwave payment');
-        }
-        setIsPlacingOrder(false);
-        return;
-      }
-      // Handle other payment methods with FormData
       const formData = new FormData();
       const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-      if (csrfToken) {
-        formData.append('_token', csrfToken);
-      }
-
+      if (csrfToken) formData.append('_token', csrfToken);
       Object.entries(orderData).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-          formData.append(key, value.toString());
-        }
+        if (value !== undefined && value !== null) formData.append(key, value.toString());
       });
-
-      if (selectedPayment === 'bank' && bankTransferFile) {
-        formData.append('bank_transfer_receipt', bankTransferFile);
-      }
 
       const response = await fetch(generateStoreUrl('store.order.place', store), {
         method: 'POST',
-        headers: {
-          'X-Requested-With': 'XMLHttpRequest',
-        },
-        body: formData
+        headers: { 'X-Requested-With': 'XMLHttpRequest', Accept: 'application/json' },
+        body: formData,
       });
-
       const data = await response.json();
-
-      if (response.ok && data.success) {
-        // Handle Skrill payment - build and submit HTML form POST to Skrill endpoint
-        if (data.payment_method === 'skrill' && data.skrill_data) {
-          const form = document.createElement('form');
-          form.method = 'POST';
-          form.action = data.skrill_endpoint;
-          Object.entries(data.skrill_data).forEach(([key, value]) => {
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = key;
-            input.value = String(value);
-            form.appendChild(input);
-          });
-          document.body.appendChild(form);
-          form.submit();
+      if (!response.ok || !data.success) {
+        if (data.errors?.delivery_date?.[0]) setDeliveryDateError(data.errors.delivery_date[0]);
+        if (data.errors?.ordering_schedule) void refreshOrderingSchedule().catch(() => {});
+        toast.error(data.message || 'Could not place your order. Please try again.');
+        return;
+      }
+      if (selectedPayment === 'stripe') {
+        if (!data.redirect_url) {
+          toast.error('Could not open secure card payment. Please try again.');
           return;
         }
-
-        // Handle Paystack payment - open modal
-        if (data.payment_method === 'paystack' && data.authorization_url) {
-          try {
-            const { handlePaystackPayment } = await import('../utils/paystack-payment');
-            await handlePaystackPayment({
-              authorization_url: data.authorization_url,
-              reference: data.reference,
-              access_code: data.access_code,
-              order_id: data.order_id,
-              order_number: data.order_number,
-            });
-            return; // Don't proceed to success page yet
-          } catch (error) {
-            console.error('Paystack payment error:', error);
-            // Fallback to redirect if modal fails
-            window.location.href = data.authorization_url;
-          }
-        }
-
-        if (data.redirect_url) {
-          window.location.href = data.redirect_url;
-        } else if (data.whatsapp_redirect && data.whatsapp_data) {
-          // For WhatsApp payment, handle redirect with confirmation
-          try {
-            const { handleWhatsAppRedirect } = await import('../utils/whatsapp-helper');
-            handleWhatsAppRedirect(data.whatsapp_data.url, data.whatsapp_data.order_id.toString());
-          } catch (error) {
-            console.error('WhatsApp redirect error:', error);
-            // Fallback to direct redirect
-            window.open(data.whatsapp_data.url, '_blank');
-          }
-
-          // Handle success state without page refresh if possible
-          if (onOrderComplete) {
-            // Update URL silently
-            const url = new URL(window.location.href);
-            url.searchParams.set('payment_status', 'success');
-            url.searchParams.set('order_number', data.order_number);
-            window.history.replaceState({}, '', url.toString());
-
-            // Trigger success modal via event
-            window.dispatchEvent(new CustomEvent('showOrderSuccess', {
-              detail: { orderNumber: data.order_number }
-            }));
-
-            // Call the complete callback (usually closes checkout modal)
-            onOrderComplete();
-          } else {
-            // Redirect to success page (legacy/fallback)
-            const storeUrl = getStoreUrl();
-            window.location.href = storeUrl + '?payment_status=success&order_number=' + data.order_number;
-          }
-        } else {
-          if (onOrderComplete) {
-            // Update URL silently
-            const url = new URL(window.location.href);
-            url.searchParams.set('payment_status', 'success');
-            url.searchParams.set('order_number', data.order_number);
-            window.history.replaceState({}, '', url.toString());
-
-            // Trigger success modal via event
-            window.dispatchEvent(new CustomEvent('showOrderSuccess', {
-              detail: { orderNumber: data.order_number }
-            }));
-
-            // Call the complete callback (usually closes checkout modal)
-            onOrderComplete();
-          } else {
-            const storeUrl = getStoreUrl();
-            window.location.href = storeUrl + '?payment_status=success&order_number=' + data.order_number;
-          }
-        }
+        window.location.assign(data.redirect_url);
+        return;
+      }
+      clearCart();
+      if (onOrderComplete) {
+        const url = new URL(window.location.href);
+        url.searchParams.set('payment_status', 'success');
+        url.searchParams.set('order_number', data.order_number);
+        window.history.replaceState({}, '', url.toString());
+        window.dispatchEvent(new CustomEvent('showOrderSuccess', { detail: { orderNumber: data.order_number } }));
+        onOrderComplete();
       } else {
-        // Handle validation errors
-        if (data.errors) {
-          // setPaymentErrors(data.errors);
-        }
-        toast.error(data.message || 'Order placement failed');
+        const url = new URL(generateStoreUrl('store.home', store));
+        url.searchParams.set('payment_status', 'success');
+        url.searchParams.set('order_number', data.order_number);
+        window.location.assign(url.toString());
       }
     } catch (error) {
       console.error('Order placement error:', error);
-      toast.error('Failed to place order. Please try again.');
+      toast.error('Could not place your order. Please try again.');
     } finally {
       setIsPlacingOrder(false);
     }
@@ -814,6 +631,10 @@ export const CheckoutProvider: React.FC<CheckoutProviderProps> = ({
   }, [step, store?.id]);
 
   const value: CheckoutContextType = {
+    deliveryDate,
+    deliveryDateError,
+    orderingUnavailable,
+    setDeliveryDate,
     step,
     customerInfo,
     couponCode,
@@ -831,9 +652,6 @@ export const CheckoutProvider: React.FC<CheckoutProviderProps> = ({
     countryId,
     stateId,
     cityId,
-    bankTransferFile,
-    whatsappNumber,
-    whatsappError,
     setStep,
     setCouponCode,
     setSelectedShipping,
@@ -846,9 +664,6 @@ export const CheckoutProvider: React.FC<CheckoutProviderProps> = ({
     setCountryId,
     setStateId,
     setCityId,
-    setBankTransferFile,
-    setWhatsappNumber,
-    setWhatsappError,
     CountryDropdown,
     StateDropdown,
     CityDropdown

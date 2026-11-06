@@ -207,10 +207,8 @@ export default function CreateOrder() {
                         <SelectValue placeholder={t('Select payment method')} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="credit_card">{t('Credit Card')}</SelectItem>
-                        <SelectItem value="paypal">{t('PayPal')}</SelectItem>
-                        <SelectItem value="bank_transfer">{t('Bank Transfer')}</SelectItem>
-                        <SelectItem value="cash">{t('Cash on Delivery')}</SelectItem>
+                        <SelectItem value="stripe">{t('Stripe')}</SelectItem>
+                        <SelectItem value="cod">{t('Cash on Delivery')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>

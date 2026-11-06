@@ -6,7 +6,7 @@ A modern, feature-rich e-commerce theme for gadgets and electronics stores built
 
 - **Complete E-commerce System** - Full shopping cart, checkout, and order management
 - **Multi-step Checkout** - Customer info, order review, payment methods
-- **Payment Gateways** - COD, Bank Transfer, Stripe, PayPal support
+- **Payment Gateways** - Stripe and cash on delivery support
 - **User Authentication** - Login, register, profile management
 - **Order Management** - Order history, tracking, invoice generation
 - **Mobile-first Design** - Responsive layout optimized for all devices
@@ -104,10 +104,7 @@ interface Product {
 
 ### Payment Methods
 - Cash on Delivery
-- Bank Transfer with receipt upload
 - Credit/Debit Cards (Stripe)
-- PayPal integration
-- Extensible for 40+ payment gateways
 
 ### Order Management
 - Order history with status tracking

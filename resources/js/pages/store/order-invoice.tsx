@@ -15,6 +15,7 @@ interface OrderInvoiceProps {
   order: {
     id: string;
     date: string;
+    delivery_date?: string | null;
     status: string;
     total: number;
     subtotal: number;
@@ -25,6 +26,14 @@ interface OrderInvoiceProps {
       name: string;
       email: string;
       phone: string;
+    };
+    shipping_address: {
+      name: string;
+      address: string;
+      city: string;
+      state: string;
+      postal_code: string;
+      country: string;
     };
     items: Array<{
       name: string;

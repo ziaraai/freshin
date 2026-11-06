@@ -148,12 +148,13 @@ class ThemeController extends Controller
         $storeSettings = [];
         
         if ($storeModel && $storeModel->user) {
-            $storeSettings = \App\Models\Setting::getUserSettings($storeModel->user->id, $store['id']);
+            $storeSettings = \App\Models\Setting::publicSettings(\App\Models\Setting::getUserSettings($storeModel->user->id, $store['id']));
             $configuration = StoreConfiguration::getConfiguration($store['id']);
         }
         
         return [
             'config' => [
+                'orderingSchedule' => app(\App\Services\OrderingSchedule::class)->status($configuration['ordering_schedule'] ?? []),
                 'storeName' => $store['name'] ?? 'gadgets',
                 'logo' => $configuration['logo'] ?? '',
                 'favicon' => $configuration['favicon'] ?? '',
@@ -310,7 +311,7 @@ class ThemeController extends Controller
         $configuration = [];
         $storeModel = Store::find($store['id']);
         if ($storeModel && $storeModel->user) {
-            $storeSettings = \App\Models\Setting::getUserSettings($storeModel->user->id, $store['id']);
+            $storeSettings = \App\Models\Setting::publicSettings(\App\Models\Setting::getUserSettings($storeModel->user->id, $store['id']));
             $configuration = StoreConfiguration::getConfiguration($store['id']);
         }
 
@@ -318,6 +319,7 @@ class ThemeController extends Controller
         if ($orderData) {
             $order = [
                 'id' => $orderData->order_number,
+                'delivery_date' => $orderData->delivery_date?->format('Y-m-d'),
                 'date' => $orderData->created_at->toISOString(),
                 'status' => ucfirst($orderData->status),
                 'total' => (float) $orderData->total_amount,
@@ -438,7 +440,7 @@ class ThemeController extends Controller
         $currencies = [];
         
         if ($storeModel && $storeModel->user) {
-            $storeSettings = \App\Models\Setting::getUserSettings($storeModel->user->id, $store['id']);
+            $storeSettings = \App\Models\Setting::publicSettings(\App\Models\Setting::getUserSettings($storeModel->user->id, $store['id']));
             $currencies = \App\Models\Currency::all()->map(function ($currency) {
                 return [
                     'code' => $currency->code,
@@ -450,6 +452,7 @@ class ThemeController extends Controller
         
         $order = [
             'id' => $orderData->order_number,
+            'delivery_date' => $orderData->delivery_date?->format('Y-m-d'),
             'date' => $orderData->created_at->toISOString(),
             'status' => ucfirst($orderData->status),
             'total' => (float) $orderData->total_amount,

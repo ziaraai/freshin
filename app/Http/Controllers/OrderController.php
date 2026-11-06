@@ -112,6 +112,7 @@ class OrderController extends Controller
             return [
                 'id' => $order->id,
                 'orderNumber' => $order->order_number,
+                'delivery_date' => $order->delivery_date?->format('Y-m-d'),
                 'customer' => trim($order->customer_first_name . ' ' . $order->customer_last_name),
                 'email' => $order->customer_email,
                 'avatar' => $order->customer?->avatar ?? null,
@@ -161,6 +162,7 @@ class OrderController extends Controller
         $formattedOrder = [
             'id' => $order->id,
             'orderNumber' => $order->order_number,
+            'delivery_date' => $order->delivery_date?->format('Y-m-d'),
             'date' => $order->created_at->format('F j, Y'),
             'status' => ucfirst($order->status),
             'paymentStatus' => ucfirst($order->payment_status),
@@ -385,6 +387,7 @@ class OrderController extends Controller
         $formattedOrder = [
             'id' => $order->id,
             'orderNumber' => $order->order_number,
+            'delivery_date' => $order->delivery_date?->format('Y-m-d'),
             'status' => $order->status,
             'paymentStatus' => $order->payment_status,
             'paymentMethod' => $order->payment_method,

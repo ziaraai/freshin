@@ -7,7 +7,7 @@ A vibrant, child-friendly e-commerce theme designed specifically for toy stores 
 - **Child-Friendly Design** - Bright, colorful interface with playful elements
 - **Complete E-commerce System** - Full shopping cart, checkout, and order management
 - **Multi-step Checkout** - Customer info, order review, payment methods
-- **Payment Gateways** - COD, Bank Transfer, Stripe, PayPal support
+- **Payment Gateways** - Stripe and cash on delivery support
 - **User Authentication** - Login, register, profile management
 - **Order Management** - Order history, tracking, invoice generation
 - **Mobile-first Design** - Responsive layout optimized for all devices

@@ -51,17 +51,6 @@ return Application::configure(basePath: dirname(__DIR__))
         except: [
             'install/*',
             'update/*',
-            'cashfree/create-session', 
-            'cashfree/webhook',
-            'ozow/create-payment',
-            'payments/easebuzz/success',
-            'payments/aamarpay/success',
-            'payments/aamarpay/callback',
-            'payments/tap/success',
-            'payments/tap/callback',
-            'payments/benefit/success',
-            'payments/benefit/callback',
-            'payments/paytabs/callback'
             ],
         );
 

@@ -68,7 +68,10 @@ class HandleInertiaRequests extends Middleware
             ];
         } else {
             // Get system settings (will use superadmin for unauthenticated users)
-            $settings = settings();
+            $settings = (array) settings();
+            if (!$request->user()) {
+                $settings = Setting::publicSettings($settings);
+            }
             // Get currency symbol
             $currencyCode = $settings['defaultCurrency'] ?? 'USD';
             $currency = Currency::where('code', $currencyCode)->first();

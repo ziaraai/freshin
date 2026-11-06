@@ -31,8 +31,8 @@ export default function CreateExpressCheckout() {
     button_text: 'Buy Now',
     button_color: '#000000',
     is_active: true,
-    payment_methods: ['credit_card', 'paypal'],
-    default_payment_method: 'credit_card',
+    payment_methods: ['stripe', 'cod'],
+    default_payment_method: 'stripe',
     skip_cart: true,
     auto_fill_customer_data: true,
     guest_checkout_allowed: false,
@@ -176,41 +176,8 @@ export default function CreateExpressCheckout() {
   ];
 
   const PAYMENT_OPTIONS = [
-    {
-      id: 'credit_card',
-      name: t('Credit / Debit Cards'),
-      description: t('Accept Visa, Mastercard, American Express, and other major card providers'),
-      icon: CreditCard,
-      badge: t('Cards')
-    },
-    {
-      id: 'paypal',
-      name: t('PayPal'),
-      description: t('Fast and trusted global checkout with PayPal digital wallet balance'),
-      icon: Wallet,
-      badge: t('Wallet')
-    },
-    {
-      id: 'apple_pay',
-      name: t('Apple Pay'),
-      description: t('Seamless 1-touch biometric checkout for Safari and iOS device shoppers'),
-      icon: Smartphone,
-      badge: t('Mobile')
-    },
-    {
-      id: 'google_pay',
-      name: t('Google Pay'),
-      description: t('Quick contactless payments for Chrome and Android mobile shoppers'),
-      icon: Smartphone,
-      badge: t('Mobile')
-    },
-    {
-      id: 'samsung_pay',
-      name: t('Samsung Pay'),
-      description: t('Convenient digital payments tailored for Samsung Galaxy devices'),
-      icon: Smartphone,
-      badge: t('Mobile')
-    },
+    { id: 'stripe', name: t('Stripe'), description: t('Pay securely by card with Stripe.'), icon: CreditCard, badge: t('Cards') },
+    { id: 'cod', name: t('Cash on Delivery'), description: t('Pay when your meals are delivered.'), icon: Wallet, badge: t('Cash') },
   ];
 
   return (
@@ -444,11 +411,8 @@ export default function CreateExpressCheckout() {
                         <SelectValue placeholder={t('Select default payment')} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="credit_card">{t('Credit / Debit Cards')}</SelectItem>
-                        <SelectItem value="paypal">{t('PayPal')}</SelectItem>
-                        <SelectItem value="apple_pay">{t('Apple Pay')}</SelectItem>
-                        <SelectItem value="google_pay">{t('Google Pay')}</SelectItem>
-                        <SelectItem value="samsung_pay">{t('Samsung Pay')}</SelectItem>
+                        <SelectItem value="stripe">{t('Stripe')}</SelectItem>
+                        <SelectItem value="cod">{t('Cash on Delivery')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>

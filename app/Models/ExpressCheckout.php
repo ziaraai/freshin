@@ -72,6 +72,8 @@ class ExpressCheckout extends Model
 
         $methods = [];
         $allMethods = [
+            'stripe' => 'Stripe',
+            'cod' => 'Cash on Delivery',
             'credit_card' => 'Credit Card',
             'paypal' => 'PayPal',
             'apple_pay' => 'Apple Pay',

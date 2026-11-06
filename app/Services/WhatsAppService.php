@@ -14,8 +14,8 @@ class WhatsAppService
         if (!$store) return false;
 
         // Get Store Owner's WhatsApp Number from Payment Settings
-        $whatsappConfig = getPaymentMethodConfig('whatsapp', $store->user_id, $store->id);
-        $storeWhatsappNumber = $whatsappConfig['number'] ?? '';
+        $settings = getPaymentSettings($store->user_id, $store->id);
+        $storeWhatsappNumber = $settings['whatsapp_number'] ?? '';
 
         $cleanNumber = $this->cleanNumber($storeWhatsappNumber);
         if (!$cleanNumber) return false;
@@ -95,8 +95,13 @@ class WhatsAppService
             '{final_total}' => number_format($order->total_amount, 2),
             '{order_date}' => $order->created_at->format('d/m/Y H:i'),
             '{payment_method}' => ucfirst($order->payment_method),
+            '{delivery_date}' => $order->delivery_date?->format('D, j M Y') ?? '',
         ];
 
+        // Existing/custom templates still need to include the selected date.
+        if ($order->delivery_date && !str_contains($template, '{delivery_date}')) {
+            $template .= "\nDelivery date: {delivery_date}";
+        }
         return str_replace(array_keys($variables), array_values($variables), $template);
     }
 

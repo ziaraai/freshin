@@ -1,3 +1,4 @@
+import { CheckoutSchedule } from '@/components/OrderingSchedule';
 import React, { useState, useEffect } from 'react';
 import { getImageUrl } from '../../../utils/image-helper';
 import { formatCurrency } from '../../../utils/currency-formatter';
@@ -66,6 +67,7 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
     emailError,
     phoneError,
     isPlacingOrder,
+    orderingUnavailable,
     countryId,
     stateId,
     cityId,
@@ -83,11 +85,7 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
     setCountryId,
     setStateId,
     setCityId,
-    setBankTransferFile,
-    whatsappNumber,
-    whatsappError,
-    setWhatsappNumber,
-    setWhatsappError
+
   } = useCheckoutContext();
 
   const storeSettings = (window as any).page?.props?.storeSettings || {};
@@ -145,6 +143,7 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
 
             {/* Step Content */}
             <div className="flex-1 overflow-y-auto p-3 md:p-6 min-h-0" style={{ WebkitOverflowScrolling: 'touch' }}>
+            <CheckoutSchedule />
               {step === 1 && (
                 <div>
                   <div className="mb-6">
@@ -377,7 +376,7 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
                   {loadingPayments ? (
                     <div className="text-center py-8">
                       <div className="w-8 h-8 border-4 border-amber-200 border-t-amber-600 rounded-full animate-spin mx-auto mb-4"></div>
-                      <p className="text-amber-600">Loading payment methods...</p>
+                      <p className="text-amber-600">Loading payment options...</p>
                     </div>
                   ) : paymentMethods.length > 0 ? (
                     <div className="space-y-4">
@@ -410,86 +409,11 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
                             </div>
                           </label>
 
-                          {selectedPayment === method.name && method.name === 'bank' && method.details && (
-                            <div className="px-4 pb-4 border-t border-gray-200 mt-2 pt-4">
-                              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-                                <h5 className="font-semibold text-blue-900 mb-2">Bank Transfer Details</h5>
-                                <div className="text-sm text-blue-800 whitespace-pre-line">{method.details}</div>
-                              </div>
-                              <div>
-                                <label className="block text-sm font-semibold text-amber-800 mb-2">
-                                  Upload Payment Receipt *
-                                </label>
-                                <input
-                                  type="file"
-                                  accept="image/*,.pdf"
-                                  onChange={(e) => {
-                                    const file = e.target.files?.[0];
-                                    if (file) {
-                                      setBankTransferFile(file);
-                                    }
-                                  }}
-                                  className="w-full px-4 py-3 border-2 border-amber-200 rounded-xl focus:outline-none focus:border-amber-500 bg-amber-50/30"
-                                />
-                              </div>
-                            </div>
-                          )}
-
-                          {selectedPayment === method.name && method.name === 'whatsapp' && (
-                            <div className="px-6 pb-6 border-t border-amber-200">
-                              <div className="bg-green-50 border border-green-200 rounded-2xl p-4 mb-4 mt-4">
-                                <h5 className="font-bold text-green-900 mb-2">WhatsApp Payment</h5>
-                                <div className="text-sm text-green-800">You will be redirected to WhatsApp to complete your payment.</div>
-                              </div>
-                              <div>
-                                <label className="block text-sm font-semibold text-amber-800 mb-2">
-                                  WhatsApp Number *
-                                </label>
-                                <input
-                                  type="tel"
-                                  value={whatsappNumber}
-                                  onChange={(e) => {
-                                    setWhatsappNumber(e.target.value);
-                                    setWhatsappError('');
-                                  }}
-                                  placeholder="+1234567890"
-                                  className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none bg-amber-50/30 ${whatsappError ? 'border-red-500 focus:border-red-500' : 'border-amber-200 focus:border-green-500'
-                                    }`}
-                                />
-                                {whatsappError && (
-                                  <p className="mt-1 text-sm text-red-600">{whatsappError}</p>
-                                )}
-                                <p className="mt-1 text-sm text-amber-600">
-                                  Enter your WhatsApp number with country code (e.g., +91 9876543210)
-                                </p>
-                              </div>
-                            </div>
-                          )}
-
-                          {selectedPayment === method.name && method.name !== 'bank' && method.form_fields && (
-                            <div className="px-6 pb-6 border-t border-amber-200">
-                              <div className="space-y-4 pt-4">
-                                {method.form_fields.map((field: any, index: number) => (
-                                  <div key={index}>
-                                    <label className="block text-sm font-semibold text-amber-800 mb-2">
-                                      {field.label} {field.required && '*'}
-                                    </label>
-                                    <input
-                                      type={field.type || 'text'}
-                                      placeholder={field.placeholder}
-                                      className="w-full px-4 py-3 border-2 border-amber-200 rounded-xl focus:outline-none focus:border-amber-500 bg-amber-50/30"
-                                      required={field.required}
-                                    />
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <p className="text-amber-600 text-center py-8">No payment methods available</p>
+                    <p className="text-amber-600 text-center py-8">Ordering is currently unavailable. Please try again later.</p>
                   )}
                 </div>
               )}
@@ -520,11 +444,11 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
                   </button>
                 ) : (
                   <button
-                    onClick={() => handlePlaceOrder(total)}
-                    disabled={isPlacingOrder || !selectedPayment || (selectedPayment === 'whatsapp' && !whatsappNumber.trim())}
+                    onClick={handlePlaceOrder}
+                    disabled={orderingUnavailable || isPlacingOrder || !selectedPayment}
                     className="w-full sm:w-auto px-8 py-3 bg-amber-600 hover:bg-amber-700 disabled:bg-amber-300 text-white font-bold rounded-xl transition-colors disabled:cursor-not-allowed order-1 sm:order-2"
                   >
-                    {isPlacingOrder ? 'Processing...' : '🛒 Place Order'}
+                    {isPlacingOrder ? 'Processing...' : selectedPayment === 'cod' ? 'Place order — pay on delivery' : 'Pay securely with Stripe'}
                   </button>
                 )}
               </div>

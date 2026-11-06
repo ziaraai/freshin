@@ -1,3 +1,4 @@
+import { DeliveryDate } from '@/components/OrderingSchedule';
 import React from 'react';
 import { formatCurrency } from '../../../utils/currency-formatter';
 
@@ -98,6 +99,7 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ onClose, o
 
           {/* Content */}
           <div className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50 space-y-4 md:space-y-6">
+            {order.delivery_date && <div className="mx-4 mt-4 rounded-lg bg-white px-4 py-1 text-stone-900"><DeliveryDate date={order.delivery_date} /></div>}
             {/* Order Status Bar */}
             <div className="bg-white rounded-2xl p-4 md:p-6 border-l-4 border-amber-500 shadow-md">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">

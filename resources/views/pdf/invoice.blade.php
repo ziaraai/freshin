@@ -259,6 +259,9 @@
             <div class="order-info-left">
                 <span class="status-text">{{ $order['status'] }}</span>
                 <span class="date-info"><strong>Date:</strong> {{ date('M d, Y', strtotime($order['date'])) }}</span>
+                @if(!empty($order['delivery_date']))
+                    <p><strong>Delivery date:</strong> {{ \Carbon\CarbonImmutable::parse($order['delivery_date'])->format('D, j M Y') }}</p>
+                @endif
             </div>
             <div class="order-info-right">
                 <div class="order-id"><strong>Order ID:</strong> {{ $order['id'] ?? $orderNumber }}</div>

@@ -24,6 +24,7 @@ import {
     CheckCircle2,
     XCircle,
     Info,
+    Clock,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -37,6 +38,7 @@ import MediaPicker from '@/components/MediaPicker';
 import { toast } from '@/components/custom-toast';
 import BadgeUI from '@/components/badge-ui';
 import { cn } from '@/lib/utils';
+import OrderingScheduleSettingsPanel, { defaultOrderingSchedule } from '@/components/ordering-schedule-settings';
 
 interface Props {
     store: any;
@@ -47,10 +49,15 @@ interface Props {
 
 export default function StoreSettings({ store, settings, currencies, timezones }: Props) {
     const { t } = useTranslation();
-    const [formData, setFormData] = useState(settings || {});
+    const [formData, setFormData] = useState(() => ({
+        ...settings,
+        ordering_schedule: { ...defaultOrderingSchedule, ...settings?.ordering_schedule },
+    }));
+    const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
     const [activeTab, setActiveTab] = useState('general');
 
     const handleSave = () => {
+        setValidationErrors({});
         toast.loading(t('Saving settings...'));
         router.put(
             route('stores.settings.update', store.id),
@@ -71,6 +78,10 @@ export default function StoreSettings({ store, settings, currencies, timezones }
                     if (typeof errors === 'string') {
                         toast.error(t(errors));
                     } else {
+                        setValidationErrors(errors);
+                        if (Object.keys(errors).some((key) => key.startsWith('settings.ordering_schedule'))) {
+                            setActiveTab('ordering');
+                        }
                         toast.error(t('Failed to save settings: {{errors}}', { errors: Object.values(errors).join(', ') }));
                     }
                 },
@@ -80,6 +91,9 @@ export default function StoreSettings({ store, settings, currencies, timezones }
 
     const updateSetting = (key: string, value: any) => {
         setFormData((prev: any) => ({ ...prev, [key]: value }));
+        setValidationErrors((previous) => Object.fromEntries(
+            Object.entries(previous).filter(([field]) => field !== `settings.${key}` && !field.startsWith(`settings.${key}.`)),
+        ));
     };
 
     const pageActions = [
@@ -100,6 +114,12 @@ export default function StoreSettings({ store, settings, currencies, timezones }
             label: t('Status & Mode'),
             icon: <Globe className="h-4 w-4" />,
             description: t('Configure online visibility'),
+        },
+        {
+            id: 'ordering',
+            label: t('Ordering & Delivery'),
+            icon: <Clock className="h-4 w-4" />,
+            description: t('Opening hours & delivery days'),
         },
         {
             id: 'branding',
@@ -282,6 +302,14 @@ export default function StoreSettings({ store, settings, currencies, timezones }
                                 </CardContent>
                             </Card>
                         </div>
+                    )}
+
+                    {activeTab === 'ordering' && (
+                        <OrderingScheduleSettingsPanel
+                            value={formData.ordering_schedule}
+                            onChange={(value) => updateSetting('ordering_schedule', value)}
+                            errors={validationErrors}
+                        />
                     )}
 
                     {/* Section 2: Branding */}

@@ -1,3 +1,4 @@
+import { OrderingStatusBanner } from '@/components/OrderingSchedule';
 import React, { useEffect } from 'react';
 import { router } from '@inertiajs/react';
 import { toast } from '@/components/custom-toast';
@@ -184,6 +185,7 @@ const GadgetsStoreContent: React.FC = () => {
         onOrdersClick={() => setShowOrdersModal(true)}
         onLogoutClick={() => logout(store?.slug)}
       />
+      <OrderingStatusBanner />
       
       <HeroSection 
         storeName={config.storeName}

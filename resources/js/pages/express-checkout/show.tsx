@@ -122,41 +122,8 @@ export default function ShowExpressCheckout() {
   ].filter(Boolean).length;
 
   const paymentMethodsList = [
-    { 
-      id: 'credit_card', 
-      name: t('Credit/Debit Cards'), 
-      desc: t('Visa, Mastercard, Amex, and global bank cards'),
-      icon: <CreditCard className="h-4 w-4" />,
-      colorClass: 'bg-blue-50 text-blue-600 dark:bg-blue-950/40 border-blue-200/60 dark:border-blue-900/40'
-    },
-    { 
-      id: 'paypal', 
-      name: t('PayPal'), 
-      desc: t('Express 1-click checkout with PayPal balance'),
-      icon: <DollarSign className="h-4 w-4" />,
-      colorClass: 'bg-sky-50 text-sky-600 dark:bg-sky-950/40 border-sky-200/60 dark:border-sky-900/40'
-    },
-    { 
-      id: 'apple_pay', 
-      name: t('Apple Pay'), 
-      desc: t('Touch ID / Face ID biometric payment for Apple users'),
-      icon: <Smartphone className="h-4 w-4" />,
-      colorClass: 'bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200 border-zinc-200 dark:border-zinc-700'
-    },
-    { 
-      id: 'google_pay', 
-      name: t('Google Pay'), 
-      desc: t('Instant, authenticated payment with Google Account'),
-      icon: <Globe className="h-4 w-4" />,
-      colorClass: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 border-emerald-200/60 dark:border-emerald-900/40'
-    },
-    { 
-      id: 'samsung_pay', 
-      name: t('Samsung Pay'), 
-      desc: t('Fast mobile wallet payment on Samsung devices'),
-      icon: <Smartphone className="h-4 w-4" />,
-      colorClass: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 border-indigo-200/60 dark:border-indigo-900/40'
-    }
+    { id: 'stripe', name: t('Stripe'), desc: t('Pay securely by card with Stripe.'), icon: <CreditCard className="h-4 w-4" />, colorClass: 'bg-blue-50 text-blue-600' },
+    { id: 'cod', name: t('Cash on Delivery'), desc: t('Pay when your meals are delivered.'), icon: <DollarSign className="h-4 w-4" />, colorClass: 'bg-emerald-50 text-emerald-600' },
   ];
 
   const checkoutSettingsList = [

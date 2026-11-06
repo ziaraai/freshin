@@ -209,9 +209,14 @@ class DomainResolver
             }
             $request->merge(['action' => 'profile']);
             return app(\App\Http\Controllers\ThemeController::class)->home($store->slug, $request);
+        } elseif ($segments[0] === 'ordering-status' && $request->isMethod('get')) {
+            return app(\App\Http\Controllers\Store\OrderingScheduleController::class)->show(
+                $request, $store->slug, app(\App\Services\OrderingSchedule::class)
+            );
         } elseif ($segments[0] === 'order') {
             if (isset($segments[1]) && $segments[1] === 'place') {
                 // Place order
+                abort_unless($request->isMethod('post'), 405);
                 return app(\App\Http\Controllers\Store\OrderController::class)->placeOrder($request, $store->slug);
             } elseif (isset($segments[1])) {
                 if (isset($segments[2]) && $segments[2] === 'pdf') {
@@ -222,9 +227,6 @@ class DomainResolver
                 $request->merge(['action' => 'order', 'order_number' => $segments[1]]);
                 return app(\App\Http\Controllers\ThemeController::class)->home($store->slug, $request);
             }
-        } elseif ($segments[0] === 'razorpay' && isset($segments[1]) && $segments[1] === 'verify-payment') {
-            // Razorpay payment verification
-            return app(\App\Http\Controllers\Store\RazorpayController::class)->verifyPayment($request, $store->slug);
         } elseif ($segments[0] === 'my-orders') {
             // My orders page
             $request->merge(['action' => 'orders']);
@@ -242,8 +244,6 @@ class DomainResolver
             return app(\App\Http\Controllers\TranslationController::class)->getTranslations($segments[1]);
         } elseif ($segments[0] === 'stripe' && isset($segments[1]) && $segments[1] === 'success' && isset($segments[2])) {
             return app(\App\Http\Controllers\Store\StripeController::class)->success($request, $store->slug, $segments[2]);
-        } elseif ($segments[0] === 'paypal' && isset($segments[1]) && $segments[1] === 'success' && isset($segments[2])) {
-            return app(\App\Http\Controllers\Store\PayPalController::class)->success($request, $store->slug, $segments[2]);
         } else {
             // Default to home page for unknown routes
             return app(\App\Http\Controllers\ThemeController::class)->home($store->slug, $request);

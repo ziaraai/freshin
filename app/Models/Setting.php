@@ -16,6 +16,24 @@ class Setting extends BaseModel
         'value',
     ];
 
+    /** Only presentation settings may be serialized into a public storefront. */
+    public static function publicSettings(array $settings): array
+    {
+        return array_intersect_key($settings, array_flip([
+            'defaultLanguage', 'dateFormat', 'timeFormat', 'calendarStartDay', 'defaultTimezone',
+            'emailVerification', 'landingPageEnabled', 'registrationEnabled',
+            'logoDark', 'logoLight', 'favicon', 'titleText', 'footerText', 'themeColor',
+            'customColor', 'sidebarVariant', 'sidebarStyle', 'layoutDirection', 'themeMode',
+            'decimalFormat', 'defaultCurrency', 'decimalSeparator', 'thousandsSeparator',
+            'floatNumber', 'currencySymbolSpace', 'currencySymbolPosition', 'currency_symbol',
+            'currency_code', 'currency_name', 'currency_position', 'currency_decimals',
+            'decimal_separator', 'thousands_separator', 'phone', 'theme',
+            'enableLogging', 'strictlyNecessaryCookies', 'cookieTitle', 'strictlyCookieTitle',
+            'cookieDescription', 'strictlyCookieDescription', 'contactUsDescription', 'contactUsUrl',
+            'recaptchaEnabled', 'recaptchaVersion', 'recaptchaSiteKey', 'seoTitle', 'seoDescription', 'seoKeywords',
+        ]));
+    }
+
     /**
      * Get the user that owns the setting.
      */

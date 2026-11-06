@@ -2,85 +2,55 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
-use App\Models\User;
-use App\Models\Plan;
 use App\Models\PaymentSetting;
+use App\Models\Plan;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class StripePaymentTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_stripe_payment_configuration()
+    protected function setUp(): void
     {
-        // Create super admin user
-        $superAdmin = User::factory()->create(['type' => 'superadmin']);
-        
-        // Create payment settings
-        PaymentSetting::create([
-            'user_id' => $superAdmin->id,
-            'key' => 'stripe_key',
-            'value' => 'pk_test_123456789'
-        ]);
-        
-        PaymentSetting::create([
-            'user_id' => $superAdmin->id,
-            'key' => 'stripe_secret',
-            'value' => 'sk_test_123456789'
-        ]);
-        
-        PaymentSetting::create([
-            'user_id' => $superAdmin->id,
-            'key' => 'is_stripe_enabled',
-            'value' => '1'
-        ]);
-
-        // Test payment methods API
-        $response = $this->get(route('payment.methods'));
-        
-        $response->assertStatus(200);
-        $data = $response->json();
-        
-        $this->assertEquals('pk_test_123456789', $data['stripe_key']);
-        $this->assertEquals('sk_test_123456789', $data['stripe_secret']);
-        $this->assertTrue($data['is_stripe_enabled']);
+        parent::setUp();
+        $this->withoutMiddleware();
     }
 
-    public function test_stripe_payment_validation()
+    public function test_stripe_configuration_never_exposes_the_secret(): void
     {
-        // Create user and plan
-        $user = User::factory()->create();
-        $plan = Plan::factory()->create(['price' => 10.00]);
-        
-        $this->actingAs($user);
+        $admin = User::withoutEvents(fn () => User::factory()->create(['type' => 'superadmin']));
+        foreach (['stripe_key' => 'pk_test_fixture', 'stripe_secret' => 'sk_test_fixture', 'is_stripe_enabled' => '1'] as $key => $value) {
+            PaymentSetting::create(['user_id' => $admin->id, 'key' => $key, 'value' => $value]);
+        }
 
-        // Test without payment method ID
-        $response = $this->post(route('stripe.payment'), [
-            'plan_id' => $plan->id,
-            'coupon_code' => '',
-            'cardholder_name' => 'Test User',
-        ]);
-
-        $response->assertSessionHasErrors(['payment_method_id']);
+        $this->getJson(route('payment.methods'))->assertOk()
+            ->assertJsonPath('stripe_key', 'pk_test_fixture')
+            ->assertJsonPath('is_stripe_enabled', true)
+            ->assertJsonMissingPath('stripe_secret')
+            ->assertDontSee('sk_test_fixture');
     }
 
-    public function test_stripe_payment_missing_configuration()
+    public function test_stripe_payment_requires_a_payment_method(): void
     {
-        // Create user and plan
-        $user = User::factory()->create();
-        $plan = Plan::factory()->create(['price' => 10.00]);
-        
-        $this->actingAs($user);
+        $user = User::withoutEvents(fn () => User::factory()->create(['type' => 'company']));
+        $plan = Plan::withoutEvents(fn () => Plan::create(['name' => 'Validation Plan', 'price' => 10, 'duration' => 'Monthly']));
+        $this->actingAs($user)->post(route('stripe.payment'), [
+            'plan_id' => $plan->id, 'billing_cycle' => 'monthly', 'cardholder_name' => 'Test Customer',
+        ])->assertSessionHasErrors('payment_method_id');
+    }
 
-        // Test without Stripe configuration
-        $response = $this->post(route('stripe.payment'), [
-            'payment_method_id' => 'pm_test_123',
-            'plan_id' => $plan->id,
-            'coupon_code' => '',
-            'cardholder_name' => 'Test User',
-        ]);
+    public function test_missing_stripe_configuration_does_not_activate_a_plan(): void
+    {
+        $user = User::withoutEvents(fn () => User::factory()->create(['type' => 'company']));
+        $plan = Plan::withoutEvents(fn () => Plan::create(['name' => 'Unavailable Plan', 'price' => 10, 'duration' => 'Monthly']));
+        $this->actingAs($user)->post(route('stripe.payment'), [
+            'payment_method_id' => 'pm_test_fixture', 'plan_id' => $plan->id,
+            'billing_cycle' => 'monthly', 'cardholder_name' => 'Test Customer',
+        ])->assertSessionHasErrors('error');
 
-        $response->assertSessionHasErrors(['error']);
+        $this->assertNull($user->fresh()->plan_id);
+        $this->assertDatabaseCount('plan_orders', 0);
     }
 }

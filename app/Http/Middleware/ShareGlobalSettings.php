@@ -22,8 +22,9 @@ class ShareGlobalSettings
         if (!$request->is('install/*') && !$request->is('update/*') && file_exists(storage_path('installed'))) {
             // Share settings with all Inertia responses
             Inertia::share([
-                'globalSettings' => function () {
-                    return settings(); // Use our helper function
+                'globalSettings' => function () use ($request) {
+                    $settings = (array) settings();
+                    return $request->user() ? $settings : \App\Models\Setting::publicSettings($settings);
                 }
             ]);
         }

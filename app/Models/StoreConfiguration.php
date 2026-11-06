@@ -59,6 +59,8 @@ class StoreConfiguration extends Model
         ];
         
         $result = array_merge($defaults, $configs);
+        $schedule = isset($configs['ordering_schedule']) ? json_decode($configs['ordering_schedule'], true) : [];
+        $result['ordering_schedule'] = array_replace(\App\Services\OrderingSchedule::defaults(), is_array($schedule) ? $schedule : []);
         
         // Convert string values to boolean for specific keys
         $booleanKeys = ['store_status', 'maintenance_mode', 'plan_disabled', 'whatsapp_widget_enabled', 'whatsapp_widget_show_on_mobile', 'whatsapp_widget_show_on_desktop'];
@@ -88,6 +90,9 @@ class StoreConfiguration extends Model
     public static function updateConfiguration($storeId, $settings)
     {
         foreach ($settings as $key => $value) {
+            if ($key === 'ordering_schedule') {
+                $value = json_encode($value, JSON_THROW_ON_ERROR);
+            }
             self::updateOrCreate(
                 ['store_id' => $storeId, 'key' => $key],
                 ['value' => is_bool($value) ? ($value ? 'true' : 'false') : (string)$value]

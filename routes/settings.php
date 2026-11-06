@@ -12,8 +12,6 @@ use App\Http\Controllers\Settings\PaymentSettingController;
 use App\Http\Controllers\Settings\TwilioSettingController;
 use App\Http\Controllers\Settings\WebhookController;
 use App\Http\Controllers\StripePaymentController;
-use App\Http\Controllers\PayPalPaymentController;
-use App\Http\Controllers\BankPaymentController;
 use Inertia\Inertia;
 
 /*
@@ -29,16 +27,12 @@ use Inertia\Inertia;
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/payment-methods', [PaymentSettingController::class, 'getPaymentMethods'])->name('payment.methods');
     Route::get('/enabled-payment-methods', [PaymentSettingController::class, 'getEnabledMethods'])->name('payment.enabled-methods');
-    Route::post('/plan-orders', [PlanOrderController::class, 'create'])->name('plan-orders.create');
     Route::post('/stripe-payment', [StripePaymentController::class, 'processPayment'])->name('settings.stripe.payment');
-    Route::post('/paypal-payment', [PayPalPaymentController::class, 'processPayment'])->name('paypal.payment');
-    Route::post('/bank-payment', [BankPaymentController::class, 'processPayment'])->name('bank.payment');
 });
 
 Route::middleware(['auth', 'verified', 'plan.access'])->group(function () {
     // Payment Settings (admin and company users)
     Route::post('/payment-settings', [PaymentSettingController::class, 'store'])->name('payment.settings');
-    Route::post('/payment-settings/test-telegram', [PaymentSettingController::class, 'testTelegram'])->name('payment.settings.test-telegram');
     
     // Twilio Settings
     Route::post('/settings/twilio', [TwilioSettingController::class, 'store'])->name('settings.twilio');

@@ -1,3 +1,4 @@
+import { DeliveryDate } from '@/components/OrderingSchedule';
 import React from 'react';
 import { Head } from '@inertiajs/react';
 import { formatCurrency } from '../../../utils/currency-formatter';
@@ -8,6 +9,7 @@ interface OrderInvoiceProps {
   order: {
     id: string;
     date: string;
+    delivery_date?: string | null;
     status: string;
     total: number;
     subtotal: number;
@@ -125,6 +127,7 @@ export const OrderInvoice: React.FC<OrderInvoiceProps> = ({ orderNumber, order }
                     <Calendar className="w-4 h-4 flex-shrink-0" />
                     <span className="font-bold text-xs sm:text-sm print:text-gray-800">{new Date(order.date).toLocaleDateString()}</span>
                   </div>
+                <DeliveryDate date={order.delivery_date} />
                 </div>
                 <div className="text-xl sm:text-2xl font-bold text-red-400 print:text-gray-900">
                   {formatCurrency(order.total, storeSettings, currencies)}

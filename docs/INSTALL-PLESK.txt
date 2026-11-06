@@ -1,0 +1,48 @@
+FRESHIN — INSTALLATION NEUVE SUR PLESK
+
+Ce ZIP contient l'application complete, les dependances PHP de production et
+le frontend compile. Ce n'est pas un patch. Il est destine a freshin.space vide.
+Aucune base de donnees ni aucun identifiant serveur existant n'est inclus.
+La premiere requete genere sur le serveur une nouvelle cle applicative
+a partir de .env.example. Aucune cle ni aucun mot de passe ne sont inclus.
+
+1. Plesk > freshin.space > Files : transferer le ZIP dans httpdocs puis extraire
+   son contenu directement dans httpdocs (app, public, vendor, artisan...).
+2. Hosting Settings : Document root = httpdocs/public. PHP = 8.4, PHP-FPM.
+   Activer HTTPS avec un certificat valide. Desactiver le mode debug.
+3. Databases : creer une base MySQL/MariaDB VIDE et son utilisateur. Conserver
+   leurs identifiants pour l'assistant, sans les publier.
+4. Verifier que storage et bootstrap/cache sont accessibles en ecriture par
+   l'utilisateur PHP du site. Les entrees ZIP des dossiers ont les droits 775.
+5. Ouvrir https://freshin.space/install. Renseigner Freshin, production,
+   APP_DEBUG=false, https://freshin.space et les identifiants de la base.
+   Utiliser des sessions et cache de type file et une queue sync.
+6. A la fin, l'assistant affiche les comptes initiaux. Se connecter puis changer
+   immediatement les mots de passe des deux comptes initiaux.
+7. Configurer GBP, le magasin Freshin et le widget WhatsApp. Dans Payment Settings,
+   activer Cash on Delivery et, si souhaite, Stripe avec des cles de test d'abord.
+   Dans Stores > Settings > Ordering & Delivery, choisir les vrais horaires et
+   jours de livraison puis activer le planning.
+
+DEPENDANCES PHP
+PHP >= 8.2 et extensions PDO MySQL, openssl, mbstring, tokenizer, ctype, curl,
+fileinfo, gd, zip, xml, dom, simplexml, exif. L'assistant controle ses exigences.
+Aucune commande npm ou composer n'est necessaire pour extraire ce package.
+
+FICHIERS PUBLICS / UPLOADS
+Seul le dossier public doit etre servi par le domaine. Ne pas servir la racine
+qui contient .env, vendor et storage. Pour les images ajoutees ulterieurement,
+le lien public/storage doit pointer vers storage/app/public. Si Plesk n'a pas
+conserve ce lien, utiliser sa fonction de tache planifiee (executer une fois)
+pour lancer PHP artisan storage:link apres avoir retire le dossier public/storage
+VIDE. Ne pas supprimer un dossier d'uploads contenant deja des fichiers.
+
+VALIDATION
+Assistant /install : HTTP 200 verifie sur ce package sans base configuree.
+71 tests cibles, 310 assertions sur le code applicatif ; frontend compile.
+948 erreurs TypeScript heritees restent presentes ; aucune nouvelle detectee.
+Aucun paiement reel n'a ete effectue. Aucun deploiement serveur n'a ete fait.
+
+Le remplissage complet de la base doit etre realise sous MySQL/MariaDB.
+Un essai SQLite a bloque le seeder d'origine sur RLIKE (syntaxe MySQL).
+Le seeding complet sous MySQL n'a pas ete execute dans cette session.

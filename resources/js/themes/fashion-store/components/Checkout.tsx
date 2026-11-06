@@ -1,3 +1,4 @@
+import { CheckoutSchedule } from '@/components/OrderingSchedule';
 import React, { useState, useEffect } from 'react';
 import { getImageUrl } from '../../../utils/image-helper';
 import { formatCurrency } from '../../../utils/currency-formatter';
@@ -59,6 +60,7 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
     emailError,
     phoneError,
     isPlacingOrder,
+    orderingUnavailable,
     countryId,
     stateId,
     cityId,
@@ -76,11 +78,7 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
     setCountryId,
     setStateId,
     setCityId,
-    setBankTransferFile,
-    whatsappNumber,
-    whatsappError,
-    setWhatsappNumber,
-    setWhatsappError
+
   } = useCheckoutContext();
 
   const storeSettings = (window as any).page?.props?.storeSettings || {};
@@ -174,6 +172,7 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
 
           {/* Content */}
           <div className="flex-1 overflow-y-auto">
+            <CheckoutSchedule />
             {step === 1 && (
               <div className="p-4 md:p-6">
                 <div className="grid grid-cols-1 gap-4">
@@ -502,7 +501,7 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
                 {loadingPayments ? (
                   <div className="text-center py-8">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-rose-600 mx-auto"></div>
-                    <p className="text-sm text-gray-500 mt-2">Loading payment methods...</p>
+                    <p className="text-sm text-gray-500 mt-2">Loading payment options...</p>
                   </div>
                 ) : paymentMethods.length > 0 ? (
                   <div className="space-y-3">
@@ -535,97 +534,13 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
                             )}
                           </div>
                         </label>
-                        
-                        {selectedPayment === method.name && method.name === 'bank' && method.details && (
-                          <div className="px-4 pb-4 border-t border-gray-200 mt-2 pt-4">
-                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-                              <h5 className="font-semibold text-blue-900 mb-2">Bank Transfer Details</h5>
-                              <div className="text-sm text-blue-800 whitespace-pre-line">{method.details}</div>
-                            </div>
-                            <div>
-                              <label className="block text-sm font-semibold text-gray-800 mb-2">
-                                Upload Payment Receipt *
-                              </label>
-                              <input
-                                type="file"
-                                accept="image/*,.pdf"
-                                onChange={(e) => {
-                                  const file = e.target.files?.[0];
-                                  if (file) setBankTransferFile(file);
-                                }}
-                                className="w-full px-4 py-3 border-2 border-rose-300 rounded-lg focus:outline-none focus:border-rose-500 bg-white"
-                              />
-                            </div>
-                          </div>
-                        )}
-                        
-                        {selectedPayment === method.name && method.name === 'whatsapp' && (
-                          <div className="px-4 pb-4 border-t border-rose-200 mt-2 pt-4">
-                            <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
-                              <h5 className="font-semibold text-green-900 mb-2">WhatsApp Payment</h5>
-                              <div className="text-sm text-green-800">You will be redirected to WhatsApp to complete your payment.</div>
-                            </div>
-                            <div>
-                              <label className="block text-sm font-semibold text-gray-800 mb-2">
-                                WhatsApp Number *
-                              </label>
-                              <input
-                                type="tel"
-                                value={whatsappNumber}
-                                onChange={(e) => {
-                                  setWhatsappNumber(e.target.value);
-                                  setWhatsappError('');
-                                }}
-                                placeholder="+1234567890"
-                                className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none bg-white ${
-                                  whatsappError ? 'border-red-500 focus:border-red-500' : 'border-rose-300 focus:border-green-500'
-                                }`}
-                              />
-                              {whatsappError && (
-                                <p className="mt-1 text-sm text-red-600">{whatsappError}</p>
-                              )}
-                              <p className="mt-1 text-sm text-gray-600">
-                                Enter your WhatsApp number with country code (e.g., +91 9876543210)
-                              </p>
-                            </div>
-                          </div>
-                        )}
-                        
-                        {selectedPayment === method.name && method.name !== 'bank' && method.form_fields && (
-                          <div className="px-4 pb-4 border-t border-rose-200 mt-2 pt-4">
-                            <div className="space-y-3">
-                              {method.form_fields.map((field: any, index: number) => (
-                                <div key={index}>
-                                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    {field.label} {field.required && '*'}
-                                  </label>
-                                  {field.type === 'file' ? (
-                                    <input
-                                      type="file"
-                                      onChange={(e) => setBankTransferFile(e.target.files?.[0] || null)}
-                                      accept={field.accept || "image/*,.pdf"}
-                                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-rose-50 file:text-rose-700 hover:file:bg-rose-100"
-                                      required={field.required}
-                                    />
-                                  ) : (
-                                    <input
-                                      type={field.type || 'text'}
-                                      placeholder={field.placeholder}
-                                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500"
-                                      required={field.required}
-                                    />
-                                  )}
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
+
                       </div>
                     ))}
                   </div>
                 ) : (
                   <div className="text-center py-8">
-                    <p className="text-gray-500">No payment methods available</p>
+                    <p className="text-gray-500">Ordering is currently unavailable. Please try again later.</p>
                   </div>
                 )}
               </div>
@@ -664,15 +579,14 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
                     </button>
                   ) : (
                     <button
-                      onClick={() => handlePlaceOrder(total)}
+                      onClick={handlePlaceOrder}
                       disabled={
-                        isPlacingOrder ||
-                        !selectedPayment ||
-                        (selectedPayment === 'whatsapp' && !whatsappNumber.trim())
+                        orderingUnavailable || isPlacingOrder ||
+                        !selectedPayment
                       }
                       className="px-8 py-3 bg-rose-600 hover:bg-rose-700 disabled:bg-gray-300 text-white font-semibold rounded-lg transition-colors cursor-pointer disabled:cursor-not-allowed"
                     >
-                      {isPlacingOrder ? 'Processing...' : 'Place Order'}
+                      {isPlacingOrder ? 'Processing...' : selectedPayment === 'cod' ? 'Place order — pay on delivery' : 'Pay securely with Stripe'}
                     </button>
                   )}
                 </div>
@@ -708,15 +622,14 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
                   </button>
                 ) : (
                   <button
-                    onClick={() => handlePlaceOrder(total)}
+                    onClick={handlePlaceOrder}
                     disabled={
-                      isPlacingOrder ||
-                      !selectedPayment ||
-                      (selectedPayment === 'whatsapp' && !whatsappNumber.trim())
+                      orderingUnavailable || isPlacingOrder ||
+                      !selectedPayment
                     }
                     className="px-8 py-3 bg-rose-600 hover:bg-rose-700 disabled:bg-gray-300 text-white font-semibold rounded-lg transition-colors cursor-pointer disabled:cursor-not-allowed"
                   >
-                    {isPlacingOrder ? 'Processing...' : 'Place Order'}
+                    {isPlacingOrder ? 'Processing...' : selectedPayment === 'cod' ? 'Place order — pay on delivery' : 'Pay securely with Stripe'}
                   </button>
                 )}
               </div>

@@ -30,7 +30,7 @@ import { useLayout } from '@/contexts/LayoutContext';
 
 export default function Settings() {
   const { t } = useTranslation();
-  const { systemSettings = {}, cacheSize = '0.00', timezones = {}, dateFormats = {}, timeFormats = {}, paymentSettings = {}, messagingVariables = {}, webhooks = [], availableModules = {}, templates = [], auth = {} } = usePage().props as any;
+  const { systemSettings = {}, cacheSize = '0.00', timezones = {}, dateFormats = {}, timeFormats = {}, paymentSettings = {}, webhooks = [], availableModules = {}, templates = [], auth = {} } = usePage().props as any;
   const [activeSection, setActiveSection] = useState('system-settings');
 
   // Define all possible sidebar navigation items
@@ -373,7 +373,7 @@ export default function Settings() {
           {/* Payment Settings Section */}
           {(auth.permissions?.includes('manage-settings') || auth.user?.type === 'superadmin') && (
             <section id="payment-settings" ref={paymentSettingsRef} className="mb-6 sm:mb-8">
-              <PaymentSettings settings={paymentSettings} messagingVariables={messagingVariables} />
+              <PaymentSettings settings={paymentSettings} />
             </section>
           )}
 

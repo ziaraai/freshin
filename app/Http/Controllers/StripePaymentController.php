@@ -28,22 +28,21 @@ class StripePaymentController extends Controller
         if ($validator->fails()) {
             return back()->withErrors($validator)->withInput();
         }
+        $validated = $validator->validated();
 
         try {
             $plan = Plan::findOrFail($request->plan_id);
             $user = auth()->user();
 
             // Calculate pricing
-            $basePrice = $request->billing_cycle === 'yearly' ? $plan->yearly_price : $plan->price;
-            $finalPrice = $basePrice; // Add coupon logic here if needed
+            $pricing = calculatePlanPricing($plan, $validated['coupon_code'] ?? null, $request->billing_cycle);
+            $finalPrice = $pricing['final_price'];
 
             // Get Stripe settings
-            $stripeSettings = PaymentSetting::where('user_id', 1)
-                ->whereIn('key', ['stripe_key', 'stripe_secret', 'is_stripe_enabled'])
-                ->pluck('value', 'key')
-                ->toArray();
+            $superAdminId = User::where('type', 'superadmin')->value('id');
+            $stripeSettings = $superAdminId ? PaymentSetting::getUserSettings($superAdminId) : [];
 
-            if (($stripeSettings['is_stripe_enabled'] ?? '0') !== '1') {
+            if (!filter_var($stripeSettings['is_stripe_enabled'] ?? false, FILTER_VALIDATE_BOOLEAN)) {
                 return back()->withErrors(['error' => __('Stripe payment is not enabled')]);
             }
 
@@ -59,22 +58,13 @@ class StripePaymentController extends Controller
             Stripe::setApiKey($stripeSecret);
 
             $paymentIntent = PaymentIntent::create([
-                'amount' => $finalPrice * 100, // Convert to cents
-                'currency' => 'usd',
+                'amount' => (int) round($finalPrice * 100),
+                'currency' => strtolower(Setting::getUserSettings($superAdminId)['defaultCurrency'] ?? 'gbp'),
                 'payment_method' => $request->payment_method_id,
                 'confirmation_method' => 'manual',
                 'confirm' => true,
                 'return_url' => route('plans.index'),
                 'description' => 'Subscription to ' . $plan->name . ' plan (' . $request->billing_cycle . ')',
-                'shipping' => [
-                    'name' => $request->cardholder_name,
-                    'address' => [
-                        'line1' => 'Address Line 1',
-                        'city' => 'City',
-                        'country' => 'US',
-                        'postal_code' => '10001',
-                    ],
-                ],
                 'metadata' => [
                     'user_id' => $user->id,
                     'plan_id' => $plan->id,
@@ -83,32 +73,6 @@ class StripePaymentController extends Controller
             ]);
 
             if ($paymentIntent->status === 'succeeded') {
-                // Create plan order
-                // $planOrder = PlanOrder::create([
-                //     'user_id' => $user->id,
-                //     'plan_id' => $plan->id,
-                //     'original_price' => $finalPrice,
-                //     'final_price' => $finalPrice,
-                //     'billing_cycle' => $request->billing_cycle,
-                //     'payment_method' => 'stripe',
-                //     'payment_id' => $paymentIntent->id,
-                //     'status' => 'approved',
-                //     'coupon_code' => $request->coupon_code,
-                //     'order_number' => 'PO-' . strtoupper(Str::random(8)),
-                //     'ordered_at' => now(),
-                //     'processed_at' => now(),
-                // ]);
-
-                // Update user plan
-                // $user->update([
-                //     'plan_id' => $plan->id,
-                //     'plan_expire_date' => $request->billing_cycle === 'yearly'
-                //         ? now()->addYear()
-                //         : now()->addMonth(),
-                //     'plan_is_active' => 1,
-                //     'is_trial' => 0,
-                // ]);
-
                 processPaymentSuccess([
                     'user_id' => auth()->id(),
                     'plan_id' => $plan->id,

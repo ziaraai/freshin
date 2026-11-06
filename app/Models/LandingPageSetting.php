@@ -66,7 +66,7 @@ class LandingPageSetting extends Model
                         'features_list' => [
                             ['title' => 'Multi-Store Management', 'description' => 'Create and manage unlimited online stores from one centralized dashboard with ease.', 'icon' => 'store'],
                             ['title' => '7+ Professional Themes', 'description' => 'Choose from beautifully designed themes for different business categories and industries.', 'icon' => 'palette'],
-                            ['title' => '30+ Payment Gateways', 'description' => 'Accept payments globally with Stripe, PayPal, Razorpay, and 30+ other payment methods.', 'icon' => 'credit-card'],
+                            ['title' => 'Stripe & Cash on Delivery', 'description' => 'Accept card payments with Stripe or collect cash on delivery.', 'icon' => 'credit-card'],
                             ['title' => 'Advanced Analytics', 'description' => 'Track sales, customers, inventory, and performance with detailed reports and insights.', 'icon' => 'bar-chart'],
                             ['title' => 'Customer Management', 'description' => 'Manage customer profiles, orders, and communication across all your stores.', 'icon' => 'users'],
                             ['title' => 'Inventory Management', 'description' => 'Track stock levels, manage products, and automate inventory across multiple stores.', 'icon' => 'package'],
@@ -222,7 +222,7 @@ class LandingPageSetting extends Model
                         'faqs' => [
                             ['question' => 'How does WhatsStore multi-store management work?', 'answer' => 'WhatsStore allows you to create and manage unlimited online stores from a single dashboard. Each store can have different themes, products, and settings while sharing centralized inventory and customer management.'],
                             ['question' => 'Can I use different themes for each store?', 'answer' => 'Yes! WhatsStore offers 7+ professional themes. You can assign different themes to each store - fashion theme for clothing stores, electronics theme for gadget stores, etc. Switch themes anytime without losing data.'],
-                            ['question' => 'What payment gateways are supported?', 'answer' => 'WhatsStore supports 30+ payment gateways including Stripe, PayPal, Razorpay, Square, and many regional providers. You can enable different payment methods for different stores based on your target markets.'],
+                            ['question' => 'What payment gateways are supported?', 'answer' => 'Stores support Stripe and cash on delivery. SaaS subscription payments use Stripe.'],
                             ['question' => 'How does inventory management work across multiple stores?', 'answer' => 'Our centralized inventory system lets you manage stock across all stores. Set different stock levels per store, enable auto-sync, or manage inventory independently. Get low-stock alerts and automated reorder notifications.'],
                         ],
                     ],

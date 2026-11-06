@@ -48,8 +48,8 @@ export const defaultLandingPageSections = {
           icon: 'store'
         },
         {
-          title: '30+ Payment Gateways',
-          description: 'Accept payments via Stripe, PayPal, Razorpay, and more.',
+          title: 'Stripe & Cash on Delivery',
+          description: 'Accept card payments with Stripe or collect cash on delivery.',
           icon: 'credit-card'
         },
         {

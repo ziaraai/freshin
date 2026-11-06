@@ -6,17 +6,18 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use Illuminate\Http\Request;
 use Stripe\Stripe;
-use Stripe\PaymentIntent;
 
 class StripeController extends Controller
 {
     public function success(Request $request, $storeSlug, $orderNumber)
     {
+        $storeModel = $request->attributes->get('resolved_store')
+            ?? \App\Models\Store::where('slug', $storeSlug)->firstOrFail();
+        $order = Order::where('order_number', $orderNumber)
+            ->where('store_id', $storeModel->id)
+            ->where('payment_method', 'stripe')->firstOrFail();
         try {
-            $order = Order::where('order_number', $orderNumber)->firstOrFail();
-            
             // Get store owner's Stripe settings
-            $storeModel = \App\Models\Store::find($order->store_id);
             if (!$storeModel || !$storeModel->user) {
                 return redirect()->to($this->getStoreHomeUrl($storeModel, $storeSlug))
                     ->with('payment_status', 'failed')
@@ -68,7 +69,7 @@ class StripeController extends Controller
             $storeModel = \App\Models\Store::where('slug', $storeSlug)->first();
             return redirect()->to($this->getStoreHomeUrl($storeModel, $storeSlug))
                 ->with('payment_status', 'failed')
-                ->withErrors(['error' => 'Payment verification failed: ' . $e->getMessage()]);
+                ->withErrors(['error' => 'Payment verification failed. Please try again.']);
         }
     }
     

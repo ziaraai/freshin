@@ -12,19 +12,8 @@ class VerifyCsrfToken extends Middleware
      * @var array<int, string>
      */
     protected $except = [
-        'payments/aamarpay/success',
-        'payments/aamarpay/callback',
-        'payments/tap/success',
-        'payments/tap/callback',
-        'payments/benefit/success',
-        'payments/benefit/callback',
-        'payments/easebuzz/success',
-        'payments/easebuzz/callback',
-        'payments/paytabs/callback',
         'api/coupon/validate',
         'api/cart',
         'api/cart/*',
-        'cashfree/webhook',
-        'store/*/store-cashfree/webhook'
     ];
 }

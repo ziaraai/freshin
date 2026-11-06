@@ -56,7 +56,7 @@ class SettingsController extends Controller
         }
         
         $currencies = Currency::all();
-        $paymentSettings = PaymentSetting::getUserSettings($settingsUserId, $storeId);
+        $paymentSettings = PaymentSetting::settingsForDisplay($settingsUserId, $storeId);
         $webhooks = Webhook::where('user_id', $settingsUserId)->get();
         $templates = Notification::all();
         

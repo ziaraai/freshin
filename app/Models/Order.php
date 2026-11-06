@@ -43,6 +43,7 @@ class Order extends Model
         'tracking_number',
         'shipped_at',
         'delivered_at',
+        'delivery_date',
         'notes',
         'coupon_code',
         'coupon_discount',
@@ -58,6 +59,7 @@ class Order extends Model
         'payment_details' => 'array',
         'shipped_at' => 'datetime',
         'delivered_at' => 'datetime',
+        'delivery_date' => 'date:Y-m-d',
     ];
 
     public function store(): BelongsTo

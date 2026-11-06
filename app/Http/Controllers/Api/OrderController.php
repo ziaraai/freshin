@@ -27,6 +27,7 @@ class OrderController extends Controller
             ->map(function ($order) {
                 return [
                     'id' => $order->order_number,
+                    'delivery_date' => $order->delivery_date?->format('Y-m-d'),
                     'date' => $order->created_at->toISOString(),
                     'status' => $order->status,
                     'total' => (float) $order->total_amount,
@@ -69,6 +70,7 @@ class OrderController extends Controller
         return response()->json([
             'order' => [
                 'id' => $order->order_number,
+                'delivery_date' => $order->delivery_date?->format('Y-m-d'),
                 'date' => $order->created_at->toISOString(),
                 'status' => ucfirst($order->status),
                 'total' => (float) $order->total_amount,
