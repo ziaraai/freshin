@@ -10,7 +10,7 @@
 @endsection
 
 @section('container')
-    <form method="post" action="{{ route('LaravelInstaller::environmentSaveWizard') }}" class="space-y-8">
+    <form id="installation-form" method="post" action="{{ route('LaravelInstaller::environmentSaveWizard', [], false) }}" class="space-y-8">
         @csrf
 
         <!-- Environment Section -->
@@ -24,7 +24,7 @@
                     <label for="app_name" class="block text-sm font-medium text-gray-700">
                         {{ trans('installer_messages.environment.wizard.form.app_name_label') }}
                     </label>
-                    <input type="text" name="app_name" id="app_name" value=""
+                    <input type="text" name="app_name" id="app_name" value="{{ old('app_name', '') }}"
                         placeholder="{{ trans('installer_messages.environment.wizard.form.app_name_placeholder') }}"
                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 {{ $errors->has('app_name') ? 'border-red-500' : '' }}" />
                     @if ($errors->has('app_name'))
@@ -41,19 +41,19 @@
                     </label>
                     <select name="environment" id="environment" onchange="checkEnvironment(this.value);"
                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                        <option value="local" selected>
+                        <option value="local" @selected(old('environment', 'production') === 'local')>
                             {{ trans('installer_messages.environment.wizard.form.app_environment_label_local') }}</option>
-                        <option value="development">
+                        <option value="development" @selected(old('environment', 'production') === 'development')>
                             {{ trans('installer_messages.environment.wizard.form.app_environment_label_developement') }}
                         </option>
-                        <option value="production">
+                        <option value="production" @selected(old('environment', 'production') === 'production')>
                             {{ trans('installer_messages.environment.wizard.form.app_environment_label_production') }}
                         </option>
-                        <option value="other">
+                        <option value="other" @selected(old('environment', 'production') === 'other')>
                             {{ trans('installer_messages.environment.wizard.form.app_environment_label_other') }}</option>
                     </select>
                     <div id="environment_text_input" style="display: none;" class="mt-2">
-                        <input type="text" name="environment_custom" id="environment_custom"
+                        <input type="text" name="environment_custom" id="environment_custom" value="{{ old('environment_custom') }}"
                             placeholder="{{ trans('installer_messages.environment.wizard.form.app_environment_placeholder_other') }}"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
                     </div>
@@ -79,7 +79,7 @@
                     <label for="app_url" class="block text-sm font-medium text-gray-700">
                         {{ trans('installer_messages.environment.wizard.form.app_url_label') }}
                     </label>
-                    <input type="url" name="app_url" id="app_url" value="http://localhost"
+                    <input type="url" name="app_url" id="app_url" value="{{ old('app_url', 'http://localhost') }}"
                         placeholder="{{ trans('installer_messages.environment.wizard.form.app_url_placeholder') }}"
                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
                 </div>
@@ -99,11 +99,11 @@
                     </label>
                     <select name="database_connection" id="database_connection"
                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                        <option value="mysql" selected>
+                        <option value="mysql" @selected(old('database_connection', 'mysql') === 'mysql')>
                             {{ trans('installer_messages.environment.wizard.form.db_connection_label_mysql') }}</option>
-                        <option value="sqlite">
+                        <option value="sqlite" @selected(old('database_connection', 'mysql') === 'sqlite')>
                             {{ trans('installer_messages.environment.wizard.form.db_connection_label_sqlite') }}</option>
-                        <option value="pgsql">
+                        <option value="pgsql" @selected(old('database_connection', 'mysql') === 'pgsql')>
                             {{ trans('installer_messages.environment.wizard.form.db_connection_label_pgsql') }}</option>
                     </select>
                 </div>
@@ -112,7 +112,7 @@
                     <label for="database_hostname" class="block text-sm font-medium text-gray-700">
                         {{ trans('installer_messages.environment.wizard.form.db_host_label') }}
                     </label>
-                    <input type="text" name="database_hostname" id="database_hostname" value="127.0.0.1"
+                    <input type="text" name="database_hostname" id="database_hostname" value="{{ old('database_hostname', '127.0.0.1') }}"
                         placeholder="{{ trans('installer_messages.environment.wizard.form.db_host_placeholder') }}"
                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
                 </div>
@@ -121,7 +121,7 @@
                     <label for="database_port" class="block text-sm font-medium text-gray-700">
                         {{ trans('installer_messages.environment.wizard.form.db_port_label') }}
                     </label>
-                    <input type="number" name="database_port" id="database_port" value="3306"
+                    <input type="number" name="database_port" id="database_port" value="{{ old('database_port', '3306') }}"
                         placeholder="{{ trans('installer_messages.environment.wizard.form.db_port_placeholder') }}"
                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
                 </div>
@@ -130,7 +130,7 @@
                     <label for="database_name" class="block text-sm font-medium text-gray-700">
                         {{ trans('installer_messages.environment.wizard.form.db_name_label') }}
                     </label>
-                    <input type="text" name="database_name" id="database_name" value=""
+                    <input type="text" name="database_name" id="database_name" value="{{ old('database_name', '') }}"
                         placeholder="{{ trans('installer_messages.environment.wizard.form.db_name_placeholder') }}"
                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
                 </div>
@@ -139,7 +139,7 @@
                     <label for="database_username" class="block text-sm font-medium text-gray-700">
                         {{ trans('installer_messages.environment.wizard.form.db_username_label') }}
                     </label>
-                    <input type="text" name="database_username" id="database_username" value=""
+                    <input type="text" name="database_username" id="database_username" value="{{ old('database_username', '') }}"
                         placeholder="{{ trans('installer_messages.environment.wizard.form.db_username_placeholder') }}"
                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
                 </div>
@@ -175,11 +175,12 @@
         <input type="hidden" name="pusher_app_secret" value="">
 
         <div class="text-center">
-            <button type="submit"
-                class="px-8 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium">
+            <button id="installation-submit" type="submit"
+                class="disabled:opacity-60 disabled:cursor-wait px-8 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium">
                 <i class="fas fa-rocket mr-2"></i>
                 {{ trans('installer_messages.environment.wizard.form.buttons.install') }}
             </button>
+            <p id="installation-status" role="status" aria-live="polite" tabindex="-1" hidden class="mt-4 text-gray-700"></p>
         </div>
     </form>
 @endsection
@@ -190,5 +191,7 @@
             const element = document.getElementById('environment_text_input');
             element.style.display = val === 'other' ? 'block' : 'none';
         }
+        checkEnvironment(document.getElementById('environment').value);
     </script>
+    @include('vendor.installer.partials.submit-status')
 @endsection

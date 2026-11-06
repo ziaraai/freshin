@@ -55,3 +55,42 @@ test('opening the final URL directly cannot complete an installation', function 
     $this->mock(\RachidLaasri\LaravelInstaller\Helpers\InstalledFileManager::class)->shouldNotReceive('update');
     $this->get('/install/final')->assertStatus(422)->assertSee('Installation incomplete');
 });
+
+test('the wizard shows connection errors and restores non-secret fields for correction', function () {
+    $this->withMiddleware();
+    $this->withSession([
+        'errors' => (new \Illuminate\Support\ViewErrorBag)->put('default', new \Illuminate\Support\MessageBag([
+            'database_connection' => 'Could not connect to the database.',
+        ])),
+        '_old_input' => [
+            'app_name' => 'Freshin setup',
+            'environment' => 'production',
+            'database_name' => 'freshin_setup_test',
+            'database_username' => 'freshin_setup_user',
+            'database_password' => 'do-not-render-this-password',
+        ],
+    ])->get('/install/environment/wizard')
+        ->assertOk()
+        ->assertSee('Could not connect to the database.')
+        ->assertSee('freshin_setup_test')
+        ->assertSee('freshin_setup_user')
+        ->assertDontSee('do-not-render-this-password')
+        ->assertSee('installation-status');
+});
+
+
+test('the wizard posts to the current origin even if the proxy reports HTTP', function () {
+    $this->withMiddleware();
+    \Illuminate\Support\Facades\URL::forceScheme('http');
+    try {
+        $this->get('/install/environment/wizard')->assertOk()
+            ->assertSee('method="post" action="/install/environment/saveWizard"', false);
+    } finally {
+        \Illuminate\Support\Facades\URL::forceScheme(null);
+    }
+});
+
+test('the wizard save endpoint rejects GET requests', function () {
+    // The application's catch-all returns 404 for this unsupported method.
+    $this->get('/install/environment/saveWizard')->assertNotFound();
+});
