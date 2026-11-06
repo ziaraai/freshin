@@ -426,3 +426,20 @@ test('public presentation settings use an allowlist instead of serializing crede
         'titleText' => 'Freshin', 'defaultCurrency' => 'GBP', 'recaptchaSiteKey' => 'public-site-key',
     ]);
 });
+
+test('the login page keeps preload and cookie headers within a standard nginx buffer', function () {
+    $marker = storage_path('installed');
+    $existed = file_exists($marker);
+    if (!$existed) touch($marker);
+    try {
+        $this->withMiddleware();
+        $response = $this->get('/login')->assertOk();
+        $bytes = 0;
+        foreach ($response->headers->all() as $name => $values) {
+            foreach ($values as $value) $bytes += strlen($name) + strlen($value) + 4;
+        }
+        expect($bytes)->toBeLessThan(4096);
+    } finally {
+        if (!$existed) unlink($marker);
+    }
+});

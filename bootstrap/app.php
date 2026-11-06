@@ -27,7 +27,7 @@ return Application::configure(basePath: dirname(__DIR__))
             ShareGlobalSettings::class,
             ShareStoresData::class,
             HandleInertiaRequests::class,
-            AddLinkHeadersForPreloadedAssets::class,
+            AddLinkHeadersForPreloadedAssets::using(2),
             DemoModeMiddleware::class,
         ]);
         

@@ -16,6 +16,8 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(\App\Services\WebhookService::class);
+        $this->app->bind(\RachidLaasri\LaravelInstaller\Helpers\DatabaseManager::class, \App\Services\InstallationDatabaseManager::class);
+        $this->app->bind(\RachidLaasri\LaravelInstaller\Controllers\FinalController::class, \App\Http\Controllers\InstallerFinalController::class);
     }
 
     /**
