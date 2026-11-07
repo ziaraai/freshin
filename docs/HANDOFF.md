@@ -71,7 +71,7 @@ hidden completely (not just optional) to keep checkout fast.
   later steps show a one-line "Delivery date: ... / Change" summary.
 - All 7 themes `resources/js/themes/*/components/Checkout.tsx`: Country/State/City/Postal code inputs and their
   required checks removed; address placeholder "Street, building, floor, postcode"; Back button uses `firstStep`.
-  Only `bakery-store` (the live theme) shows the extra "Delivery day" bubble in its progress bar; other themes'
+  `bakery-store` and `supermarket-store` (the live theme is supermarket, green) show the extra "Delivery day" bubble in its progress bar; other themes'
   progress bars still show 3 bubbles (none highlighted on step 0).
 - `app/Http/Controllers/Store/OrderController.php`: city/state/postal/country are `nullable`; saved as
   `Greenwich` / `London` / `` / `United Kingdom` when not sent (DB columns are NOT NULL).

@@ -4,7 +4,7 @@ import { getImageUrl } from '../../../utils/image-helper';
 import { formatCurrency } from '../../../utils/currency-formatter';
 import { CheckoutProvider, useCheckoutContext } from '../../../contexts/CheckoutContext';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { X, ShoppingCart, User, Package, CreditCard, Check, Minus, Plus, Trash2 } from 'lucide-react';
+import { X, ShoppingCart, User, Package, CreditCard, Check, CalendarDays, Minus, Plus, Trash2 } from 'lucide-react';
 
 interface Product {
   id: string;
@@ -110,8 +110,9 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
     };
   }, []);
 
-  const stepIcons = [User, Package, CreditCard];
-  const stepLabels = ['Information', 'Review', 'Payment'];
+  const stepIcons = [CalendarDays, User, Package, CreditCard];
+  const stepLabels = ['Delivery day', 'Information', 'Review', 'Payment'];
+  const stepNumbers = firstStep === 0 ? [0, 1, 2, 3] : [1, 2, 3];
 
   return (
     <div className="fixed inset-0 z-50 bg-black/50">
@@ -142,8 +143,8 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
           {/* Progress Steps */}
           <div className="px-4 md:px-6 py-4 bg-white border-b">
             <div className="flex items-center justify-center max-w-md mx-auto">
-              {[1, 2, 3].map((stepNum, index) => {
-                const Icon = stepIcons[index];
+              {stepNumbers.map((stepNum) => {
+                const Icon = stepIcons[stepNum];
                 const isActive = step >= stepNum;
                 const isCompleted = step > stepNum;
                 
@@ -159,8 +160,8 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
                       <span className={`mt-2 text-xs font-medium ${
                         isActive ? 'text-green-600' : 'text-gray-500'
                       }`}>
-                        <span className="hidden sm:inline">{stepLabels[index]}</span>
-                        <span className="sm:hidden">{stepLabels[index].slice(0, 4)}</span>
+                        <span className="hidden sm:inline">{stepLabels[stepNum]}</span>
+                        <span className="sm:hidden">{stepLabels[stepNum].split(' ')[0].slice(0, 4)}</span>
                       </span>
                     </div>
                     {stepNum < 3 && (
