@@ -82,6 +82,7 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
     setStateId,
     setCityId,
 
+    firstStep,
   } = useCheckoutContext();
 
   const storeSettings = (window as any).page?.props?.storeSettings || {};
@@ -247,84 +248,6 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
                         />
                       </div>
                       
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-sm font-bold text-purple-700 mb-2">Country *</label>
-                          <Select
-                            value={(() => {
-                              const countries = (window as any).page?.props?.countries || [];
-                              const selectedCountry = countries.find(c => c.name === customerInfo.country);
-                              return selectedCountry?.id?.toString() || '';
-                            })()} 
-                            onValueChange={(countryId) => {
-                              const countries = (window as any).page?.props?.countries || [];
-                              const selectedCountry = countries.find(c => c.id.toString() === countryId);
-                              if (selectedCountry) {
-                                handleInputChange('country', selectedCountry.name);
-                                handleInputChange('state', '');
-                                handleInputChange('city', '');
-                                setCountryId(selectedCountry.id);
-                                setStateId(undefined);
-                                setCityId(undefined);
-                              }
-                            }}
-                          >
-                            <SelectTrigger className="focus:ring-purple-300 focus:border-purple-300 border-purple-200 rounded-2xl bg-purple-50">
-                              <SelectValue placeholder="Select Country" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {((window as any).page?.props?.countries || []).map(country => (
-                                <SelectItem key={country.id} value={country.id.toString()}>
-                                  {country.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        
-                        <div>
-                          <label className="block text-sm font-bold text-purple-700 mb-2">State *</label>
-                          <StateDropdown
-                            countryId={countryId}
-                            value={customerInfo.state}
-                            onChange={(value, id) => {
-                              handleInputChange('state', value);
-                              handleInputChange('city', '');
-                              setStateId(id);
-                              setCityId(undefined);
-                            }}
-                            className="w-full px-4 py-3 border-2 border-purple-200 rounded-2xl bg-purple-50 text-purple-800 focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-300"
-                            disabled={!countryId}
-                          />
-                        </div>
-                      </div>
-                      
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-sm font-bold text-purple-700 mb-2">City *</label>
-                          <CityDropdown
-                            stateId={stateId}
-                            value={customerInfo.city}
-                            onChange={(value, id) => {
-                              handleInputChange('city', value);
-                              setCityId(id);
-                            }}
-                            className="w-full px-4 py-3 border-2 border-purple-200 rounded-2xl bg-purple-50 text-purple-800 focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-300"
-                            disabled={!stateId}
-                          />
-                        </div>
-                        
-                        <div>
-                          <label className="block text-sm font-bold text-purple-700 mb-2">Postal Code *</label>
-                          <input
-                            type="text"
-                            value={customerInfo.postalCode}
-                            onChange={(e) => handleInputChange('postalCode', e.target.value)}
-                            className="w-full px-4 py-3 border-2 border-purple-200 rounded-2xl bg-purple-50 text-purple-800 focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-300"
-                            placeholder="12345"
-                          />
-                        </div>
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -562,7 +485,7 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
                 </div>
                 <div className="flex items-center justify-between gap-3">
                   <div>
-                    {step > 1 && (
+                    {step > firstStep && (
                       <button
                         onClick={handlePrevStep}
                         className="px-4 py-3 border-2 border-purple-300 text-purple-700 rounded-2xl hover:bg-purple-50 transition-colors text-sm font-bold"
@@ -576,7 +499,7 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
                       <button
                         onClick={handleNextStep}
                         disabled={
-                          (step === 1 && (!customerInfo.firstName || !customerInfo.lastName || !customerInfo.email || !customerInfo.phone || !customerInfo.address || !customerInfo.city || !customerInfo.state || !customerInfo.country || !customerInfo.postalCode)) ||
+                          (step === 1 && (!customerInfo.firstName || !customerInfo.lastName || !customerInfo.email || !customerInfo.phone || !customerInfo.address)) ||
                           (step === 2 && !selectedShipping)
                         }
                         className="w-full px-6 py-3 bg-purple-500 hover:bg-purple-600 disabled:bg-gray-300 text-white font-bold rounded-2xl transition-all disabled:cursor-not-allowed text-sm transform hover:scale-105"
@@ -599,7 +522,7 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
               {/* Desktop Layout */}
               <div className="hidden md:flex md:items-center md:justify-between gap-4">
                 <div>
-                  {step > 1 && (
+                  {step > firstStep && (
                     <button
                       onClick={handlePrevStep}
                       className="px-6 py-3 border-2 border-purple-300 text-purple-700 rounded-2xl hover:bg-purple-50 transition-colors font-bold"
@@ -619,7 +542,7 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
                     <button
                       onClick={handleNextStep}
                       disabled={
-                        (step === 1 && (!customerInfo.firstName || !customerInfo.lastName || !customerInfo.email || !customerInfo.phone || !customerInfo.address || !customerInfo.city || !customerInfo.state || !customerInfo.country || !customerInfo.postalCode)) ||
+                        (step === 1 && (!customerInfo.firstName || !customerInfo.lastName || !customerInfo.email || !customerInfo.phone || !customerInfo.address)) ||
                         (step === 2 && !selectedShipping)
                       }
                       className="px-8 py-3 bg-purple-500 hover:bg-purple-600 disabled:bg-gray-300 text-white font-bold rounded-2xl transition-all disabled:cursor-not-allowed transform hover:scale-105"

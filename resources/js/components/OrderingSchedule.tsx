@@ -24,8 +24,17 @@ export function OrderingStatusBanner() {
 
 export function CheckoutSchedule() {
   const { orderingSchedule, scheduleError } = useStore();
-  const { deliveryDate, deliveryDateError, setDeliveryDate } = useCheckoutContext();
+  const { deliveryDate, deliveryDateError, setDeliveryDate, step, setStep } = useCheckoutContext();
   if (!orderingSchedule?.enabled && !scheduleError) return null;
+
+  if (step > 0 && deliveryDate) {
+    return (
+      <div className="m-4 flex items-center justify-between rounded-lg border border-stone-200 bg-white px-4 py-3 text-stone-900 sm:mx-6">
+        <DeliveryDate date={deliveryDate} />
+        <button type="button" className="text-sm font-semibold underline" onClick={() => setStep(0)}>Change</button>
+      </div>
+    );
+  }
 
   return (
     <div className="m-4 rounded-lg border border-stone-200 bg-white p-4 text-stone-900 sm:mx-6">

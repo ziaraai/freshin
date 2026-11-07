@@ -89,6 +89,7 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
     setStateId,
     setCityId,
 
+    firstStep,
   } = useCheckoutContext();
 
   const storeSettings = (window as any).page?.props?.storeSettings || {};
@@ -139,10 +140,11 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
           <div className="px-4 sm:px-6 py-4 bg-stone-50 border-b border-stone-200">
             <div className="flex items-center justify-center space-x-2 sm:space-x-8">
               {[
+                ...(firstStep === 0 ? [{ num: 0, label: 'Delivery day', icon: '📅' }] : []),
                 { num: 1, label: 'Information', icon: '👤' },
                 { num: 2, label: 'Review', icon: '📋' },
                 { num: 3, label: 'Payment', icon: '💳' }
-              ].map((stepItem, index) => (
+              ].map((stepItem, index, steps) => (
                 <div key={stepItem.num} className="flex items-center">
                   <div className="flex items-center">
                     <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-sm sm:text-lg font-bold transition-all ${
@@ -158,7 +160,7 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
                       {stepItem.label}
                     </span>
                   </div>
-                  {index < 2 && (
+                  {index < steps.length - 1 && (
                     <div className={`w-4 sm:w-16 h-1 ml-2 sm:ml-4 rounded-full ${
                       step > stepItem.num ? 'bg-stone-700' : 'bg-stone-200'
                     }`}></div>
@@ -231,83 +233,8 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
                         onChange={(e) => handleInputChange('address', e.target.value)}
                         className="w-full px-4 py-3 border-2 border-stone-300 rounded-lg focus:outline-none focus:border-stone-600 transition-colors"
                         rows={3}
-                        placeholder="Enter your full address"
+                        placeholder="Street, building, floor, postcode"
                       />
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-semibold text-stone-700 mb-2">Country *</label>
-                        <Select
-                          value={(() => {
-                            const countries = (window as any).page?.props?.countries || [];
-                            const selectedCountry = countries.find(c => c.name === customerInfo.country);
-                            return selectedCountry?.id?.toString() || '';
-                          })()} 
-                          onValueChange={(countryId) => {
-                            const countries = (window as any).page?.props?.countries || [];
-                            const selectedCountry = countries.find(c => c.id.toString() === countryId);
-                            if (selectedCountry) {
-                              handleInputChange('country', selectedCountry.name);
-                              handleInputChange('state', '');
-                              handleInputChange('city', '');
-                              setCountryId(selectedCountry.id);
-                              setStateId(undefined);
-                              setCityId(undefined);
-                            }
-                          }}
-                        >
-                          <SelectTrigger className="w-full px-4 border-2 border-stone-300 focus:border-stone-600 focus:ring-stone-600">
-                            <SelectValue placeholder="Select Country" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {((window as any).page?.props?.countries || []).map(country => (
-                              <SelectItem key={country.id} value={country.id.toString()}>
-                                {country.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-stone-700 mb-2">State *</label>
-                        <StateDropdown
-                          countryId={countryId}
-                          value={customerInfo.state}
-                          onChange={(value, id) => {
-                            handleInputChange('state', value);
-                            handleInputChange('city', '');
-                            setStateId(id);
-                            setCityId(undefined);
-                          }}
-                          className="w-full px-4 py-3 border-2 border-stone-300 rounded-lg focus:outline-none focus:border-stone-600 focus:ring-stone-600 transition-colors"
-                          disabled={!countryId}
-                        />
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-semibold text-stone-700 mb-2">City *</label>
-                        <CityDropdown
-                          stateId={stateId}
-                          value={customerInfo.city}
-                          onChange={(value, id) => {
-                            handleInputChange('city', value);
-                            setCityId(id);
-                          }}
-                          className="w-full px-4 py-3 border-2 border-stone-300 rounded-lg focus:outline-none focus:border-stone-600 focus:ring-stone-600 transition-colors"
-                          disabled={!stateId}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-stone-700 mb-2">Postal Code *</label>
-                        <input
-                          type="text"
-                          value={customerInfo.postalCode}
-                          onChange={(e) => handleInputChange('postalCode', e.target.value)}
-                          className="w-full px-4 py-1.5 border-2 border-stone-300 rounded-lg focus:outline-none focus:border-stone-600 transition-colors"
-                          placeholder="Enter postal code"
-                        />
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -545,7 +472,7 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
                 <p className="text-xl font-bold text-stone-800">{formatCurrency(total, storeSettings, currencies)}</p>
               </div>
               <div className="flex gap-3">
-                {step > 1 && (
+                {step > firstStep && (
                   <button
                     onClick={handlePrevStep}
                     className="flex-1 px-4 py-3 border-2 border-stone-300 text-stone-700 rounded-lg hover:bg-stone-100 transition-colors font-semibold text-sm"
@@ -557,7 +484,7 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
                   <button
                     onClick={handleNextStep}
                     disabled={
-                      (step === 1 && (!customerInfo.firstName || !customerInfo.lastName || !customerInfo.email || !customerInfo.phone || !customerInfo.address || !customerInfo.city || !customerInfo.state || !customerInfo.country || !customerInfo.postalCode)) ||
+                      (step === 1 && (!customerInfo.firstName || !customerInfo.lastName || !customerInfo.email || !customerInfo.phone || !customerInfo.address)) ||
                       (step === 2 && !selectedShipping)
                     }
                     className="flex-1 px-4 py-3 bg-stone-700 hover:bg-stone-800 disabled:bg-stone-300 text-white font-bold rounded-lg transition-colors disabled:cursor-not-allowed shadow-lg text-sm"
@@ -580,7 +507,7 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
             {/* Desktop Layout */}
             <div className="hidden sm:flex items-center justify-between">
               <div>
-                {step > 1 && (
+                {step > firstStep && (
                   <button
                     onClick={handlePrevStep}
                     className="px-6 py-3 border-2 border-stone-300 text-stone-700 rounded-lg hover:bg-stone-100 transition-colors font-semibold"
@@ -598,7 +525,7 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
                   <button
                     onClick={handleNextStep}
                     disabled={
-                      (step === 1 && (!customerInfo.firstName || !customerInfo.lastName || !customerInfo.email || !customerInfo.phone || !customerInfo.address || !customerInfo.city || !customerInfo.state || !customerInfo.country || !customerInfo.postalCode)) ||
+                      (step === 1 && (!customerInfo.firstName || !customerInfo.lastName || !customerInfo.email || !customerInfo.phone || !customerInfo.address)) ||
                       (step === 2 && !selectedShipping)
                     }
                     className="px-8 py-3 bg-stone-700 hover:bg-stone-800 disabled:bg-stone-300 text-white font-bold rounded-lg transition-colors disabled:cursor-not-allowed shadow-lg"

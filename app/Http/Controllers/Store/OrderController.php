@@ -9,6 +9,11 @@ use Illuminate\Http\Request;
 
 class OrderController extends Controller
 {
+    // Checkout only asks for a street address; the service area is Greenwich, London.
+    private const DEFAULT_CITY = 'Greenwich';
+    private const DEFAULT_STATE = 'London';
+    private const DEFAULT_COUNTRY = 'United Kingdom';
+
     protected $orderService;
 
     public function __construct(OrderService $orderService)
@@ -29,15 +34,15 @@ class OrderController extends Controller
                 'customer_email' => 'required|email|max:255',
                 'customer_phone' => 'nullable|string|max:20',
                 'shipping_address' => 'required|string|max:255',
-                'shipping_city' => 'required|max:100',
-                'shipping_state' => 'required|max:100',
-                'shipping_postal_code' => 'required|string|max:20',
-                'shipping_country' => 'required|max:100',
+                'shipping_city' => 'nullable|max:100',
+                'shipping_state' => 'nullable|max:100',
+                'shipping_postal_code' => 'nullable|string|max:20',
+                'shipping_country' => 'nullable|max:100',
                 'billing_address' => 'required|string|max:255',
-                'billing_city' => 'required|max:100',
-                'billing_state' => 'required|max:100',
-                'billing_postal_code' => 'required|string|max:20',
-                'billing_country' => 'required|max:100',
+                'billing_city' => 'nullable|max:100',
+                'billing_state' => 'nullable|max:100',
+                'billing_postal_code' => 'nullable|string|max:20',
+                'billing_country' => 'nullable|max:100',
                 'payment_method' => 'required|in:stripe,cod',
                 'shipping_method_id' => 'nullable|exists:shippings,id',
                 'notes' => 'nullable|string',
@@ -84,15 +89,15 @@ class OrderController extends Controller
                 'customer_email' => $request->customer_email,
                 'customer_phone' => $request->customer_phone,
                 'shipping_address' => $request->shipping_address,
-                'shipping_city' => $request->shipping_city,
-                'shipping_state' => $request->shipping_state,
-                'shipping_postal_code' => $request->shipping_postal_code,
-                'shipping_country' => $request->shipping_country,
+                'shipping_city' => $request->input('shipping_city') ?: self::DEFAULT_CITY,
+                'shipping_state' => $request->input('shipping_state') ?: self::DEFAULT_STATE,
+                'shipping_postal_code' => $request->input('shipping_postal_code') ?: '',
+                'shipping_country' => $request->input('shipping_country') ?: self::DEFAULT_COUNTRY,
                 'billing_address' => $request->billing_address,
-                'billing_city' => $request->billing_city,
-                'billing_state' => $request->billing_state,
-                'billing_postal_code' => $request->billing_postal_code,
-                'billing_country' => $request->billing_country,
+                'billing_city' => $request->input('billing_city') ?: self::DEFAULT_CITY,
+                'billing_state' => $request->input('billing_state') ?: self::DEFAULT_STATE,
+                'billing_postal_code' => $request->input('billing_postal_code') ?: '',
+                'billing_country' => $request->input('billing_country') ?: self::DEFAULT_COUNTRY,
                 'subtotal' => $calculation['subtotal'],
                 'tax_amount' => $calculation['tax'],
                 'shipping_amount' => $calculation['shipping'],

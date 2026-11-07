@@ -221,6 +221,27 @@ test('an accepted order persists the selected delivery date as a calendar date',
     Event::assertDispatched(OrderCreated::class);
 });
 
+test('checkout with only a street address is accepted and defaults the area to Greenwich, London', function () {
+    $payload = $this->orderPayload;
+    foreach (['shipping', 'billing'] as $prefix) {
+        foreach (['city', 'state', 'postal_code', 'country'] as $field) {
+            unset($payload["{$prefix}_{$field}"]);
+        }
+    }
+    $payload['billing_country'] = '';
+
+    $this->postJson(route('store.order.place', $this->shop->slug), $payload)
+        ->assertOk()->assertJsonPath('success', true);
+
+    $order = Order::sole();
+    expect($order->shipping_address)->toBe('1 Test Street')
+        ->and($order->shipping_city)->toBe('Greenwich')
+        ->and($order->shipping_state)->toBe('London')
+        ->and($order->shipping_country)->toBe('United Kingdom')
+        ->and($order->shipping_postal_code)->toBe('')
+        ->and($order->billing_country)->toBe('United Kingdom');
+});
+
 test('removed payment methods cannot create customer orders', function (string $method) {
     $this->postJson(route('store.order.place', $this->shop->slug), array_replace($this->orderPayload, [
         'payment_method' => $method,

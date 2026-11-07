@@ -243,6 +243,7 @@ interface CheckoutContextType {
   orderingUnavailable: boolean;
   setDeliveryDate: (date: string) => void;
   step: number;
+  firstStep: number;
   customerInfo: CustomerInfo;
   couponCode: string;
   appliedCoupon: { code: string, discount: number, type?: string, discount_amount?: number } | null;
@@ -317,7 +318,13 @@ export const CheckoutProvider: React.FC<CheckoutProviderProps> = ({
       setDeliveryDateError('That delivery date is no longer available. Please choose another day.');
     }
   }, [deliveryDate, orderingSchedule]);
-  const [step, setStep] = useState(1);
+  // Step 0 is the delivery-day step; it only exists when the ordering schedule is on.
+  const firstStep = orderingSchedule?.enabled ? 0 : 1;
+  const [step, setStep] = useState(firstStep);
+  useEffect(() => {
+    if (firstStep === 0 && !deliveryDate) setStep(current => (current === 1 ? 0 : current));
+    if (firstStep === 1) setStep(current => (current === 0 ? 1 : current));
+  }, [firstStep]);
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo>({
     firstName: isLoggedIn && userProfile ? userProfile.first_name : '',
     lastName: isLoggedIn && userProfile ? userProfile.last_name : '',
@@ -415,6 +422,11 @@ export const CheckoutProvider: React.FC<CheckoutProviderProps> = ({
     }
     if (orderingSchedule?.enabled && !orderingSchedule.delivery_dates.some(day => day.value === deliveryDate)) {
       setDeliveryDateError('Please choose an available delivery date.');
+      setStep(0);
+      return;
+    }
+    if (step === 0) {
+      setStep(1);
       return;
     }
     if (step === 1) {
@@ -437,7 +449,7 @@ export const CheckoutProvider: React.FC<CheckoutProviderProps> = ({
   };
 
   const handlePrevStep = () => {
-    if (step > 1) setStep(step - 1);
+    if (step > firstStep) setStep(step - 1);
   };
 
   const handleApplyCoupon = async (subtotal: number) => {
@@ -636,6 +648,7 @@ export const CheckoutProvider: React.FC<CheckoutProviderProps> = ({
     orderingUnavailable,
     setDeliveryDate,
     step,
+    firstStep,
     customerInfo,
     couponCode,
     appliedCoupon,

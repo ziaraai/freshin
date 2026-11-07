@@ -60,6 +60,24 @@ today must be selectable.
     `resources/js/components/ordering-schedule-settings.tsx` (new setups only).
 - NOT done by default for the live site: the store's saved setting may still be 28. Set it to 7 in the admin panel.
 
+### 3.4 Delivery day as its own checkout step + address only
+User wish: the delivery day is a separate first step (Delivery day -> Information -> Review -> Payment), and the
+customer fills in only the street address (service area is Greenwich only). Country/State/City/Postal code must be
+hidden completely (not just optional) to keep checkout fast.
+- `resources/js/contexts/CheckoutContext.tsx`: new step 0 = delivery day (exists only when the ordering schedule is
+  on; exposed as `firstStep`). Continue on step 0 goes to Information; if the date becomes invalid later the
+  customer is sent back to step 0. Back button goes down to `firstStep`.
+- `resources/js/components/OrderingSchedule.tsx` (`CheckoutSchedule`): step 0 shows hours banner + day chips;
+  later steps show a one-line "Delivery date: ... / Change" summary.
+- All 7 themes `resources/js/themes/*/components/Checkout.tsx`: Country/State/City/Postal code inputs and their
+  required checks removed; address placeholder "Street, building, floor, postcode"; Back button uses `firstStep`.
+  Only `bakery-store` (the live theme) shows the extra "Delivery day" bubble in its progress bar; other themes'
+  progress bars still show 3 bubbles (none highlighted on step 0).
+- `app/Http/Controllers/Store/OrderController.php`: city/state/postal/country are `nullable`; saved as
+  `Greenwich` / `London` / `` / `United Kingdom` when not sent (DB columns are NOT NULL).
+- Test added in `tests/Unit/OrderingScheduleHttpTest.php` (order with only a street address). Ordering tests: 70 pass.
+- Full suite: 22 failures (dashboard/auth/profile tests) exist before and after these changes (unrelated, not fixed).
+
 ## 4. To make the new picker live on freshin.space
 1. Admin panel -> store settings -> **Ordering hours & delivery days**: enable, tick delivery days,
    set **Delivery booking window (days)** = `7`, set opening/closing times.
@@ -72,7 +90,7 @@ today must be selectable.
    ```
    Upload `public/build` to `httpdocs/public/build` on the server (Plesk File Manager), then hard refresh (Ctrl+F5).
 3. If code was changed (PHP), also upload changed PHP files or `git pull` on the server, then
-   `php artisan config:clear`.
+   `php artisan config:clear`. For 3.4 the PHP file is `app/Http/Controllers/Store/OrderController.php`.
 
 Status: build verified on 2026-11-07 (npm ci + composer install + vite build OK; ordering tests: 69 passed).
 

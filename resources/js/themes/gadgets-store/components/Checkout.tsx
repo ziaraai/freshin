@@ -79,6 +79,7 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
     setStateId,
     setCityId,
 
+    firstStep,
   } = useCheckoutContext();
 
   // Get store settings for currency formatting
@@ -217,78 +218,7 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
                       onChange={(e) => handleInputChange('address', e.target.value)}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
                       rows={3}
-                      placeholder="Enter your full address"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Country *</label>
-                    <Select
-                      value={(() => {
-                        const countries = (window as any).page?.props?.countries || [];
-                        const selectedCountry = countries.find(c => c.name === customerInfo.country);
-                        return selectedCountry?.id?.toString() || '';
-                      })()}
-                      onValueChange={(countryId) => {
-                        const countries = (window as any).page?.props?.countries || [];
-                        const selectedCountry = countries.find(c => c.id.toString() === countryId);
-                        if (selectedCountry) {
-                          handleInputChange('country', selectedCountry.name);
-                          handleInputChange('state', '');
-                          handleInputChange('city', '');
-                          setCountryId(selectedCountry.id);
-                          setStateId(undefined);
-                          setCityId(undefined);
-                        }
-                      }}
-                    >
-                      <SelectTrigger className="w-full focus:ring-blue-500 focus:border-blue-500">
-                        <SelectValue placeholder="Select Country" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {((window as any).page?.props?.countries || []).map(country => (
-                          <SelectItem key={country.id} value={country.id.toString()}>
-                            {country.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">State *</label>
-                    <StateDropdown
-                      countryId={countryId}
-                      value={customerInfo.state}
-                      onChange={(value, id) => {
-                        handleInputChange('state', value);
-                        handleInputChange('city', '');
-                        setStateId(id);
-                        setCityId(undefined);
-                      }}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
-                      disabled={!countryId}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">City *</label>
-                    <CityDropdown
-                      stateId={stateId}
-                      value={customerInfo.city}
-                      onChange={(value, id) => {
-                        handleInputChange('city', value);
-                        setCityId(id);
-                      }}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
-                      disabled={!stateId}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Postal Code *</label>
-                    <input
-                      type="text"
-                      value={customerInfo.postalCode}
-                      onChange={(e) => handleInputChange('postalCode', e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
-                      placeholder="Enter postal code"
+                      placeholder="Street, building, floor, postcode"
                     />
                   </div>
                 </div>
@@ -540,7 +470,7 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
               </div>
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  {step > 1 && (
+                  {step > firstStep && (
                     <button
                       onClick={handlePrevStep}
                       className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
@@ -554,7 +484,7 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
                     <button
                       onClick={handleNextStep}
                       disabled={
-                        (step === 1 && (!customerInfo.firstName || !customerInfo.lastName || !customerInfo.email || !customerInfo.phone || !customerInfo.address || !customerInfo.city || !customerInfo.state || !customerInfo.country || !customerInfo.postalCode)) ||
+                        (step === 1 && (!customerInfo.firstName || !customerInfo.lastName || !customerInfo.email || !customerInfo.phone || !customerInfo.address)) ||
                         (step === 2 && !selectedShipping)
                       }
                       className="px-8 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white font-semibold rounded-lg transition-colors cursor-pointer disabled:cursor-not-allowed"
@@ -580,7 +510,7 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
             {/* Desktop Layout */}
             <div className="hidden md:flex md:items-center md:justify-between gap-4">
               <div>
-                {step > 1 && (
+                {step > firstStep && (
                   <button
                     onClick={handlePrevStep}
                     className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
@@ -598,7 +528,7 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
                   <button
                     onClick={handleNextStep}
                     disabled={
-                      (step === 1 && (!customerInfo.firstName || !customerInfo.lastName || !customerInfo.email || !customerInfo.phone || !customerInfo.address || !customerInfo.city || !customerInfo.state || !customerInfo.country || !customerInfo.postalCode)) ||
+                      (step === 1 && (!customerInfo.firstName || !customerInfo.lastName || !customerInfo.email || !customerInfo.phone || !customerInfo.address)) ||
                       (step === 2 && !selectedShipping)
                     }
                     className="px-8 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white font-semibold rounded-lg transition-colors cursor-pointer disabled:cursor-not-allowed"

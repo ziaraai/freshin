@@ -82,6 +82,7 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
     setStateId,
     setCityId,
 
+    firstStep,
   } = useCheckoutContext();
 
   const storeSettings = (window as any).page?.props?.storeSettings || {};
@@ -246,84 +247,6 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
                       />
                     </div>
                     
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-bold text-white mb-2">COUNTRY *</label>
-                        <Select
-                          value={(() => {
-                            const countries = (window as any).page?.props?.countries || [];
-                            const selectedCountry = countries.find(c => c.name === customerInfo.country);
-                            return selectedCountry?.id?.toString() || '';
-                          })()} 
-                          onValueChange={(countryId) => {
-                            const countries = (window as any).page?.props?.countries || [];
-                            const selectedCountry = countries.find(c => c.id.toString() === countryId);
-                            if (selectedCountry) {
-                              handleInputChange('country', selectedCountry.name);
-                              handleInputChange('state', '');
-                              handleInputChange('city', '');
-                              setCountryId(selectedCountry.id);
-                              setStateId(undefined);
-                              setCityId(undefined);
-                            }
-                          }}
-                        >
-                          <SelectTrigger className="focus:ring-red-500 focus:border-red-500 bg-slate-800 border-slate-600 text-white">
-                            <SelectValue placeholder="Select Country" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {((window as any).page?.props?.countries || []).map(country => (
-                              <SelectItem key={country.id} value={country.id.toString()}>
-                                {country.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-bold text-white mb-2">STATE *</label>
-                        <StateDropdown
-                          countryId={countryId}
-                          value={customerInfo.state}
-                          onChange={(value, id) => {
-                            handleInputChange('state', value);
-                            handleInputChange('city', '');
-                            setStateId(id);
-                            setCityId(undefined);
-                          }}
-                          className="w-full px-4 py-3 bg-slate-800 border-2 border-slate-600 text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                          disabled={!countryId}
-                        />
-                      </div>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-bold text-white mb-2">CITY *</label>
-                        <CityDropdown
-                          stateId={stateId}
-                          value={customerInfo.city}
-                          onChange={(value, id) => {
-                            handleInputChange('city', value);
-                            setCityId(id);
-                          }}
-                          className="w-full px-4 py-3 bg-slate-800 border-2 border-slate-600 text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                          disabled={!stateId}
-                        />
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-bold text-white mb-2">POSTAL CODE *</label>
-                        <input
-                          type="text"
-                          value={customerInfo.postalCode}
-                          onChange={(e) => handleInputChange('postalCode', e.target.value)}
-                          className="w-full px-4 py-3 bg-slate-800 border-2 border-slate-600 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                          placeholder="12345"
-                        />
-                      </div>
-                    </div>
                   </div>
                 </div>
               </div>
@@ -556,7 +479,7 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
               </div>
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  {step > 1 && (
+                  {step > firstStep && (
                     <button
                       onClick={handlePrevStep}
                       className="px-4 py-3 border-2 border-slate-600 text-white hover:bg-slate-700 transition-colors text-sm font-bold"
@@ -570,7 +493,7 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
                     <button
                       onClick={handleNextStep}
                       disabled={
-                        (step === 1 && (!customerInfo.firstName || !customerInfo.lastName || !customerInfo.email || !customerInfo.phone || !customerInfo.address || !customerInfo.city || !customerInfo.state || !customerInfo.country || !customerInfo.postalCode)) ||
+                        (step === 1 && (!customerInfo.firstName || !customerInfo.lastName || !customerInfo.email || !customerInfo.phone || !customerInfo.address)) ||
                         (step === 2 && !selectedShipping)
                       }
                       className="w-full px-6 py-3 bg-red-600 hover:bg-red-700 disabled:bg-slate-600 text-white font-bold transition-colors disabled:cursor-not-allowed text-sm border-2 border-red-600"
@@ -593,7 +516,7 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
             {/* Desktop Layout */}
             <div className="hidden md:flex md:items-center md:justify-between gap-4">
               <div>
-                {step > 1 && (
+                {step > firstStep && (
                   <button
                     onClick={handlePrevStep}
                     className="px-6 py-3 border-2 border-slate-600 text-white hover:bg-slate-700 transition-colors font-bold"
@@ -613,7 +536,7 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
                   <button
                     onClick={handleNextStep}
                     disabled={
-                      (step === 1 && (!customerInfo.firstName || !customerInfo.lastName || !customerInfo.email || !customerInfo.phone || !customerInfo.address || !customerInfo.city || !customerInfo.state || !customerInfo.country || !customerInfo.postalCode)) ||
+                      (step === 1 && (!customerInfo.firstName || !customerInfo.lastName || !customerInfo.email || !customerInfo.phone || !customerInfo.address)) ||
                       (step === 2 && !selectedShipping)
                     }
                     className="px-8 py-3 bg-red-600 hover:bg-red-700 disabled:bg-slate-600 text-white font-bold transition-colors disabled:cursor-not-allowed border-2 border-red-600"
