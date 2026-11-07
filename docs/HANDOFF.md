@@ -78,6 +78,13 @@ hidden completely (not just optional) to keep checkout fast.
 - Test added in `tests/Unit/OrderingScheduleHttpTest.php` (order with only a street address). Ordering tests: 70 pass.
 - Full suite: 22 failures (dashboard/auth/profile tests) exist before and after these changes (unrelated, not fixed).
 
+### 3.5 No same-day orders
+User decision (2026-11-07): customers must NOT order for today; earliest delivery day is tomorrow.
+- `app/Services/OrderingSchedule.php`: delivery dates now start at tomorrow (offset 1..advance_days inclusive),
+  so with a window of 7 each weekday still appears once (tomorrow ... today+7). Server rejects today's date.
+- Tests updated (booking window excludes today, "same day" rejected). Ordering tests: 71 pass.
+- Frontend unchanged ("Today" label code stays but never shows).
+
 ## 4. To make the new picker live on freshin.space
 1. Admin panel -> store settings -> **Ordering hours & delivery days**: enable, tick delivery days,
    set **Delivery booking window (days)** = `7`, set opening/closing times.

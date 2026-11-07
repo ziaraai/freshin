@@ -96,7 +96,7 @@ test('the live ordering status endpoint reflects the current cutoff and cannot b
     $response = $this->getJson(route('store.ordering-status', $this->shop->slug))
         ->assertOk()->assertJsonPath('enabled', true)->assertJsonPath('is_open', true)
         ->assertJsonPath('timezone', 'Europe/London')
-        ->assertJsonPath('delivery_dates.0.value', '2026-11-09');
+        ->assertJsonPath('delivery_dates.0.value', '2026-11-10');
     expect($response->headers->get('Cache-Control'))->toContain('no-store');
 
     CarbonImmutable::setTestNow(CarbonImmutable::parse('2026-11-09 17:00:00', 'Europe/London'));

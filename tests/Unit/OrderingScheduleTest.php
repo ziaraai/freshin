@@ -50,7 +50,7 @@ test('opening is inclusive and closing is exclusive', function (string $clock, b
     expect($service->status(freshinSchedule(), $now)['is_open'])->toBe($isOpen);
 
     if ($isOpen) {
-        expect($service->validateOrder(freshinSchedule(), '2026-11-09', $now))->toBe('2026-11-09');
+        expect($service->validateOrder(freshinSchedule(), '2026-11-10', $now))->toBe('2026-11-10');
     } else {
         // Choosing a future date must not bypass the current ordering cutoff.
         expectFreshinScheduleError(
@@ -124,20 +124,22 @@ test('delivery dates are filtered by delivery weekdays independently of order we
     );
 });
 
-test('the booking window includes today and ends before the next day outside it', function () {
+test('the booking window starts tomorrow, excludes today, and ends after the window', function () {
     $service = new OrderingSchedule;
     $schedule = freshinSchedule(['advance_days' => 2]);
     $now = CarbonImmutable::parse('2026-11-09 12:00:00', 'Europe/London');
 
     expect(array_column($service->status($schedule, $now)['delivery_dates'], 'value'))
-        ->toBe(['2026-11-09', '2026-11-10'])
-        ->and($service->validateOrder($schedule, '2026-11-09', $now))->toBe('2026-11-09')
-        ->and($service->validateOrder($schedule, '2026-11-10', $now))->toBe('2026-11-10');
+        ->toBe(['2026-11-10', '2026-11-11'])
+        ->and($service->validateOrder($schedule, '2026-11-10', $now))->toBe('2026-11-10')
+        ->and($service->validateOrder($schedule, '2026-11-11', $now))->toBe('2026-11-11');
 
-    expectFreshinScheduleError(
-        fn () => $service->validateOrder($schedule, '2026-11-11', $now),
-        'delivery_date',
-    );
+    foreach (['2026-11-09', '2026-11-12'] as $outside) {
+        expectFreshinScheduleError(
+            fn () => $service->validateOrder($schedule, $outside, $now),
+            'delivery_date',
+        );
+    }
 });
 
 test('missing malformed past and unavailable dates are rejected', function (mixed $deliveryDate) {
@@ -159,5 +161,6 @@ test('missing malformed past and unavailable dates are rejected', function (mixe
     'array injection' => [['2026-11-09']],
     'past day' => ['2026-11-06'],
     'closed delivery weekday' => ['2026-11-14'],
-    'beyond the booking window' => ['2026-12-07'],
+    'same day' => ['2026-11-09'],
+    'beyond the booking window' => ['2026-12-08'],
 ]);

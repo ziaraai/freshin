@@ -45,7 +45,7 @@ class OrderingSchedule
 
         $dates = [];
         if ($enabled) {
-            for ($offset = 0; $offset < (int) $schedule['advance_days']; $offset++) {
+            for ($offset = 1; $offset <= (int) $schedule['advance_days']; $offset++) {
                 $date = $now->startOfDay()->addDays($offset);
                 if (in_array($date->dayOfWeekIso, $schedule['delivery_days'])) {
                     $dates[] = ['value' => $date->format('Y-m-d'), 'label' => $date->format('D, j M Y')];
