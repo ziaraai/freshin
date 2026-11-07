@@ -67,7 +67,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                 <ShoppingCart className="w-6 h-6" />
               </div>
               <div>
-                <h2 className="text-xl font-bold">Shopping Cart</h2>
+                <h2 className="text-xl font-bold">Your Cart</h2>
                 <p className="text-green-100 text-sm">{cartItems.length} items • Fresh & Ready</p>
               </div>
             </div>
@@ -85,7 +85,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                 <ShoppingBag className="w-10 h-10 text-green-600" />
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-3">Your cart is empty</h3>
-              <p className="text-gray-600 mb-6">Add fresh products to get started!</p>
+              <p className="text-gray-600 mb-6">Add a dish to get started!</p>
               <button
                 onClick={onClose}
                 className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"

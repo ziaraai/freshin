@@ -124,7 +124,6 @@ const ProductCard: React.FC<{
             )}
           </div>
           
-          <p className="text-xs text-gray-500">SKU: {product.id}</p>
         </div>
       </div>
     </div>

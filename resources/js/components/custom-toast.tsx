@@ -1,6 +1,7 @@
 import { Toaster } from '@/components/ui/sonner';
 import { toast as sonnerToast } from 'sonner';
 import { router } from '@inertiajs/react';
+import { useEffect } from 'react';
 
 const isDemoMode = (): boolean => {
   // Check both window.isDemo and page props for demo mode
@@ -41,7 +42,7 @@ router.patch = function(url: string, data?: any, options?: any) {
 export const toast = {
   ...sonnerToast,
   success: (message: string, options?: any) => {
-    return sonnerToast.success(message, { duration: 5000, ...options });
+    return sonnerToast.success(message, { duration: 2500, ...options });
   },
   error: (message: string, options?: any) => {
     return sonnerToast.error(message, { duration: 6000, ...options });
@@ -55,5 +56,16 @@ export const toast = {
 };
 
 export const CustomToast = () => {
-    return <Toaster position="top-right" duration={5000} richColors closeButton />;
+    // Clicking anywhere on a notification closes it.
+    useEffect(() => {
+        const dismissOnClick = (event: MouseEvent) => {
+            const toastElement = (event.target as HTMLElement | null)?.closest('[data-sonner-toast]');
+            if (toastElement) sonnerToast.dismiss();
+        };
+        document.addEventListener('click', dismissOnClick);
+        return () => document.removeEventListener('click', dismissOnClick);
+    }, []);
+
+    // Bottom centre keeps the header cart button and the WhatsApp button visible.
+    return <Toaster position="bottom-center" duration={2500} richColors closeButton />;
 };

@@ -129,7 +129,7 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
               </div>
               <div>
                 <h2 className="text-xl md:text-2xl font-bold text-gray-900">Checkout</h2>
-                <p className="text-sm text-gray-600">Complete your fresh grocery order</p>
+                <p className="text-sm text-gray-600">Complete your meal order</p>
               </div>
             </div>
             <button 

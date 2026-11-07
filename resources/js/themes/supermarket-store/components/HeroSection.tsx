@@ -43,7 +43,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             </h1>
           ) : (
             <h1 className="text-3xl md:text-5xl font-bold leading-tight mb-6 text-white">
-              Fresh Groceries Delivered Daily
+              Home-Cooked Meals Delivered in Greenwich
             </h1>
           )}
           

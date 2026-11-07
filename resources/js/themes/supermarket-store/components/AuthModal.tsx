@@ -36,7 +36,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, onLogin, onContin
             </div>
             
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Ready to Checkout?</h2>
-            <p className="text-gray-600">Choose how you'd like to complete your fresh grocery order</p>
+            <p className="text-gray-600">Choose how you'd like to complete your meal order</p>
           </div>
 
           {/* Content */}

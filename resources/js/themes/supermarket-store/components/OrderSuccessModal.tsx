@@ -69,7 +69,7 @@ export const OrderSuccessModal: React.FC<OrderSuccessModalProps> = ({
             </div>
 
             <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Order Confirmed!</h2>
-            <p className="text-gray-600 mb-4">Your fresh groceries are on their way</p>
+            <p className="text-gray-600 mb-4">Your meal is booked for your delivery day</p>
           </div>
 
           {/* Content */}

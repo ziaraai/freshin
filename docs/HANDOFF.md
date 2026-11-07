@@ -85,6 +85,15 @@ User decision (2026-11-07): customers must NOT order for today; earliest deliver
 - Tests updated (booking window excludes today, "same day" rejected). Ordering tests: 71 pass.
 - Frontend unchanged ("Today" label code stays but never shows).
 
+### 3.6 Notifications and meal wording
+- `resources/js/components/custom-toast.tsx` (global, admin + shop): notifications now appear bottom-centre (they used
+  to cover the header cart button), success messages close after 2.5 s, and clicking a notification closes it.
+- Supermarket theme (live): grocery wording replaced with meal wording (hero "Home-Cooked Meals Delivered in
+  Greenwich", search "Search for dishes...", checkout "Complete your meal order", success "Your meal is booked for
+  your delivery day", invoice "Thank you for your order!", "Your Cart", "Delivery Address", phone hint +44).
+  SKU line removed from dish cards (still visible in the dish detail tab).
+- Needs a new frontend build upload (no PHP change).
+
 ## 4. To make the new picker live on freshin.space
 1. Admin panel -> store settings -> **Ordering hours & delivery days**: enable, tick delivery days,
    set **Delivery booking window (days)** = `7`, set opening/closing times.

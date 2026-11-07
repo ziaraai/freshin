@@ -150,7 +150,7 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ onClose, o
                     <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
                       <MapPin className="w-4 h-4 text-green-600" />
                     </div>
-                    <h3 className="font-semibold text-gray-900">Shipping Address</h3>
+                    <h3 className="font-semibold text-gray-900">Delivery Address</h3>
                   </div>
                   <div className="text-sm space-y-1">
                     <p className="font-medium text-gray-900">{order.shipping_address.name}</p>

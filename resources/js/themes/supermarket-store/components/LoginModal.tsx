@@ -153,7 +153,7 @@ const LoginModalContent: React.FC<LoginModalProps> = ({ onClose, onLoginSuccess,
                 <User className="w-8 h-8 text-green-600" />
               </div>
               <p className="text-gray-600">
-                {isLogin ? 'Sign in to your account to continue shopping' : 'Join us to start your fresh shopping experience'}
+                {isLogin ? 'Sign in to your account to order your meals' : 'Create an account to order your meals'}
               </p>
             </div>
 
@@ -223,7 +223,7 @@ const LoginModalContent: React.FC<LoginModalProps> = ({ onClose, onLoginSuccess,
                       className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500" 
                     />
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">Include country code (e.g., +91)</p>
+                  <p className="text-xs text-gray-500 mt-1">Include country code (e.g., +44)</p>
                 </div>
               )}
 

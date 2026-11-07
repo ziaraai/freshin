@@ -339,7 +339,7 @@ export const OrderInvoice: React.FC<OrderInvoiceProps> = ({ orderNumber, order }
             <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <ShoppingBag className="w-6 h-6 text-green-600" />
             </div>
-            <h3 className="font-semibold text-gray-900 mb-2">Thank you for choosing fresh groceries!</h3>
+            <h3 className="font-semibold text-gray-900 mb-2">Thank you for your order!</h3>
             <p className="text-gray-600 text-sm">If you have any questions about your order, please contact our support team.</p>
           </div>
         </div>

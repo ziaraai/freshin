@@ -75,7 +75,7 @@ export const Header: React.FC<HeaderProps> = ({
                 <div className="relative">
                   <input
                     type="text"
-                    placeholder="Search for groceries, fruits, vegetables..."
+                    placeholder="Search for dishes..."
                     value={searchQuery}
                     onChange={(e) => {
                       setSearchQuery(e.target.value);
@@ -186,7 +186,7 @@ export const Header: React.FC<HeaderProps> = ({
                 <div className="relative">
                   <input
                     type="text"
-                    placeholder="Search groceries..."
+                    placeholder="Search dishes..."
                     value={searchQuery}
                     onChange={(e) => {
                       setSearchQuery(e.target.value);
