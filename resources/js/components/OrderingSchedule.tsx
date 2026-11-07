@@ -32,14 +32,24 @@ export function CheckoutSchedule() {
       <OrderingStatusBanner />
       {orderingSchedule?.enabled && (
         <div className="mt-4">
-          <label htmlFor="delivery-date" className="mb-2 block text-sm font-semibold">Delivery date *</label>
-          <select id="delivery-date" value={deliveryDate} onChange={event => setDeliveryDate(event.target.value)}
-            aria-required="true" aria-invalid={!!deliveryDateError} aria-describedby="delivery-date-help delivery-date-error"
-            className="w-full rounded-lg border border-stone-300 bg-white px-3 py-3 text-base text-stone-900 focus:outline-2 focus:outline-offset-2 focus:outline-stone-700">
-            <option value="">Choose a delivery date</option>
-            {orderingSchedule.delivery_dates.map(date => <option key={date.value} value={date.value}>{date.label}</option>)}
-          </select>
-          <p id="delivery-date-help" className="mt-2 text-xs text-stone-600">One delivery date for all meals in this order. Only available delivery days are shown.</p>
+          <p id="delivery-date-label" className="mb-2 block text-sm font-semibold">Choose your delivery day *</p>
+          <div role="radiogroup" aria-labelledby="delivery-date-label" aria-required="true" aria-invalid={!!deliveryDateError}
+            aria-describedby="delivery-date-help delivery-date-error" className="flex flex-wrap gap-2">
+            {orderingSchedule.delivery_dates.map(date => {
+              const selected = deliveryDate === date.value;
+              const parsed = new Date(`${date.value}T12:00:00Z`);
+              const weekday = new Intl.DateTimeFormat('en-GB', { weekday: 'short', timeZone: 'UTC' }).format(parsed);
+              const dayMonth = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' }).format(parsed);
+              return (
+                <button key={date.value} type="button" role="radio" aria-checked={selected} onClick={() => setDeliveryDate(date.value)}
+                  className={`min-w-[4.5rem] rounded-xl border px-3 py-2 text-center text-sm focus:outline-2 focus:outline-offset-2 focus:outline-stone-700 ${selected ? 'border-stone-900 bg-stone-900 text-white' : 'border-stone-300 bg-white text-stone-900'}`}>
+                  <span className="block font-semibold">{date.value === orderingSchedule.server_now?.slice(0, 10) ? 'Today' : weekday}</span>
+                  <span className="block text-xs">{dayMonth}</span>
+                </button>
+              );
+            })}
+          </div>
+          <p id="delivery-date-help" className="mt-2 text-xs text-stone-600">One delivery day for all meals in this order. Each day shows its next date.</p>
           {orderingSchedule.delivery_dates.length === 0 && <p className="mt-2 text-sm">No delivery dates are currently available.</p>}
           <p id="delivery-date-error" role="alert" className="mt-2 text-sm text-red-700">{deliveryDateError}</p>
         </div>

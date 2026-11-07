@@ -16,7 +16,7 @@ class OrderingSchedule
             'opens_at' => '09:00',
             'closes_at' => '17:00',
             'delivery_days' => [1, 2, 3, 4, 5],
-            'advance_days' => 28,
+            'advance_days' => 7,
         ];
     }
 
