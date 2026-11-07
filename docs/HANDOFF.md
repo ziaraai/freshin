@@ -74,8 +74,7 @@ today must be selectable.
 3. If code was changed (PHP), also upload changed PHP files or `git pull` on the server, then
    `php artisan config:clear`.
 
-Status of the build at the time of writing: `npm ci` OK; `vite build` failed only because `vendor/` was missing;
-`composer install` was started. See section 6.
+Status: build verified on 2026-11-07 (npm ci + composer install + vite build OK; ordering tests: 69 passed).
 
 ## 5. Useful Plesk facts
 - Run artisan without SSH: Websites & Domains -> Scheduled Tasks -> Run a PHP script,
@@ -84,7 +83,7 @@ Status of the build at the time of writing: `npm ci` OK; `vite build` failed onl
 - Never put real secrets (DB password, Stripe keys) in the repo or in this file.
 
 ## 6. Open items / next steps
-- [ ] Finish building frontend (`composer install` then `npm run build`) and upload `public/build`.
+- [ ] Upload the built `public/build` (zip made in the session; rebuild with the commands in section 4 if missing).
 - [ ] Set booking window = 7 and delivery days in the admin panel; test an order end to end (COD, then Stripe test mode).
 - [ ] Remove the leftover Plesk scheduled task (`storage:link`).
 - [ ] Stripe: add Stripe keys (test mode first) in payment settings.
