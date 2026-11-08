@@ -195,7 +195,7 @@ export const ProductSections: React.FC<ProductSectionsProps> = ({
                         {category.name}
                       </h2>
                       <p className="text-gray-600">
-                        {category.description || `Fresh and quality ${category.name.toLowerCase()} for your family`}
+                        {category.description || `Fresh ${category.name.toLowerCase()}, delivered to your space`}
                       </p>
                     </div>
                   </div>

@@ -105,6 +105,16 @@ the confirm button fell off the bottom of the window.
 - Opens with the product's current gallery pre-selected (`initialSelected` from `MediaPicker.tsx`), because confirming
   replaces the gallery. "Remove all images" appears when everything is deselected.
 
+### 3.8 QR download, category text, upload optimisation
+- Dashboard "Store QR Code" card: new **Download QR** button saves a 1200 px PNG (`qrcode` package) for flyers;
+  caption now "Scan with your phone to open the store" (`resources/js/pages/dashboard.tsx`).
+- Category subtitle on the shop (supermarket theme) falls back to "Fresh {category}, delivered to your space" when the
+  category has no description. Best practice: write a description per category in the admin (Categories).
+- `app/Services/ImageOptimizer.php` + `MediaController::batchStore`: uploads larger than 150 KB or 1600 px are scaled
+  to max 1600 px and saved as WebP (JPEG fallback); original kept if not smaller. Tests: `tests/Unit/ImageOptimizerTest.php`.
+- Open question: user said the dashboard/store "look heavy when it loads"; images were ruled out by the user
+  (already optimised). Not yet clarified (could be the dashboard entrance animations or server speed).
+
 ## 4. To make the new picker live on freshin.space
 1. Admin panel -> store settings -> **Ordering hours & delivery days**: enable, tick delivery days,
    set **Delivery booking window (days)** = `7`, set opening/closing times.

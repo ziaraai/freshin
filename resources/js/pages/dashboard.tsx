@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useTranslation } from 'react-i18next';
 import { Link, router, usePage } from '@inertiajs/react';
 import QRCode from 'react-qr-code';
+import QRCodeGenerator from 'qrcode';
 import { AreaChart, Area, BarChart, Bar, Cell, CartesianGrid, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, LabelList } from 'recharts';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { formatCurrency } from '@/utils/currency-helper';
@@ -192,6 +193,22 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, isSup
 
   const getThemeColorValue = () => {
     return themeColor === 'custom' ? customColor : THEME_COLORS[themeColor];
+  };
+
+  // Saves a large PNG of the store QR code, sharp enough for flyers and cards.
+  const downloadQrCode = async () => {
+    if (!storeUrl) return;
+    try {
+      const dataUrl = await QRCodeGenerator.toDataURL(storeUrl, { width: 1200, margin: 2, errorCorrectionLevel: 'M' });
+      const link = document.createElement('a');
+      link.href = dataUrl;
+      link.download = `${(currentStore?.name || 'store').replace(/[^a-z0-9]+/gi, '-').toLowerCase()}-qr-code.png`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (error) {
+      console.error('QR code download failed:', error);
+    }
   };
 
   const copyToClipboard = async () => {
@@ -1509,7 +1526,7 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, isSup
               <div className="text-center sm:text-left xl:text-center w-full max-w-sm space-y-3">
                 <div>
                   <p className="text-base sm:text-lg font-bold text-foreground truncate">{currentStore?.name}</p>
-                  <p className="text-xs sm:text-sm text-muted-foreground mt-1">{t('Scan with phone to open WhatsApp store')}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-1">{t('Scan with your phone to open the store')}</p>
                 </div>
                 <div className="flex items-center justify-center sm:justify-start xl:justify-center gap-2.5 pt-1 flex-wrap">
                   <Button
@@ -1521,6 +1538,17 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, isSup
                     {copied ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4 text-muted-foreground" />}
                     {copied ? t('Copied!') : t('Copy Link')}
                   </Button>
+                  {storeUrl && (
+                    <Button
+                      variant="outline"
+                      size="default"
+                      onClick={downloadQrCode}
+                      className="flex items-center gap-2 text-xs sm:text-sm h-9 sm:h-10 px-3.5 sm:px-4 cursor-pointer whitespace-nowrap"
+                    >
+                      <Download className="h-4 w-4 text-muted-foreground" />
+                      {t('Download QR')}
+                    </Button>
+                  )}
                   {storeUrl && (
                     <Button
                       variant="default"

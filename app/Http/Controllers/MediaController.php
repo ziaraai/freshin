@@ -193,9 +193,13 @@ class MediaController extends Controller
                     'name' => $file->getClientOriginalName(),
                 ]);
 
-                $media = $mediaItem->addMedia($file)
-                    ->toMediaCollection('images');
-                
+                // Large photos are shrunk before saving so shop pages load fast.
+                $optimized = app(\App\Services\ImageOptimizer::class)->optimize($file);
+                $media = ($optimized
+                    ? $mediaItem->addMedia($optimized['path'])->usingFileName($optimized['name'])->usingName(pathinfo($optimized['name'], PATHINFO_FILENAME))
+                    : $mediaItem->addMedia($file)
+                )->toMediaCollection('images');
+
                 $media->user_id = auth()->id();
                 $media->save();
                 
