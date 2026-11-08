@@ -1,7 +1,7 @@
 import { hasPermission } from '@/utils/authorization';
 import { getImageUrl } from '@/utils/image-helper';
 import { usePage } from '@inertiajs/react';
-import { Check, Image as ImageIcon, Plus, Search, Upload } from 'lucide-react';
+import { Image as ImageIcon, Plus, Search, Upload, X } from 'lucide-react';
 import React, { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { Badge } from './ui/badge';
@@ -25,9 +25,10 @@ interface MediaLibraryModalProps {
     onClose: () => void;
     onSelect: (url: string) => void;
     multiple?: boolean;
+    initialSelected?: string[];
 }
 
-export default function MediaLibraryModal({ isOpen, onClose, onSelect, multiple = false }: MediaLibraryModalProps) {
+export default function MediaLibraryModal({ isOpen, onClose, onSelect, multiple = false, initialSelected = [] }: MediaLibraryModalProps) {
     const { auth, csrf_token } = usePage().props as any;
     const permissions = auth?.permissions || [];
     const canUploadMedia = hasPermission(permissions, 'upload-media');
@@ -78,7 +79,11 @@ export default function MediaLibraryModal({ isOpen, onClose, onSelect, multiple 
         if (isOpen) {
             fetchMedia();
             setSearchTerm('');
+            // Start from the images already chosen, so they can be seen and removed.
+            setSelectedItems(multiple ? initialSelected.map(convertToRelativePath).filter(Boolean) : []);
         }
+        // initialSelected is read only when the library opens.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isOpen, fetchMedia]);
 
     // Filter media based on search term
@@ -196,7 +201,7 @@ export default function MediaLibraryModal({ isOpen, onClose, onSelect, multiple 
     };
 
     const handleConfirmSelection = () => {
-        if (multiple && selectedItems.length > 0) {
+        if (multiple) {
             onSelect(selectedItems.join(','));
             onClose();
         }
@@ -238,9 +243,9 @@ export default function MediaLibraryModal({ isOpen, onClose, onSelect, multiple 
                     </DialogTitle>
                 </DialogHeader>
 
-                <div className="flex min-h-0 flex-1 flex-col space-y-4">
+                <div className="flex min-h-0 flex-1 flex-col gap-4">
                     {/* Header with Search and Upload */}
-                    <div className="flex flex-col gap-3 sm:flex-row">
+                    <div className="flex shrink-0 flex-col gap-3 sm:flex-row">
                         <div className="relative flex-1">
                             <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
                             <Input
@@ -276,7 +281,7 @@ export default function MediaLibraryModal({ isOpen, onClose, onSelect, multiple 
                     </div>
 
                     {/* Stats and Selection Info */}
-                    <div className="text-muted-foreground bg-muted/30 flex items-center justify-between rounded-md px-3 py-2 text-sm">
+                    <div className="text-muted-foreground bg-muted/30 flex shrink-0 items-center justify-between rounded-md px-3 py-2 text-sm">
                         <span>
                             {filteredMedia.length} files • Page {currentPage} of {totalPages || 1}
                         </span>
@@ -288,7 +293,7 @@ export default function MediaLibraryModal({ isOpen, onClose, onSelect, multiple 
                     </div>
 
                     {/* Media Grid */}
-                    <div className="bg-muted/10 flex min-h-[250px] flex-1 flex-col overflow-y-auto rounded-lg border">
+                    <div className="bg-muted/10 flex min-h-[120px] flex-1 flex-col overflow-y-auto rounded-lg border">
                         {loading ? (
                             <div className="flex flex-1 items-center justify-center">
                                 <div className="text-center">
@@ -333,13 +338,13 @@ export default function MediaLibraryModal({ isOpen, onClose, onSelect, multiple 
                             </div>
                         ) : (
                             <div className="p-4">
-                                <div className="grid grid-cols-6 gap-3">
+                                <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6">
                                     {currentMedia.map((item) => (
                                         <div
                                             key={item.id}
                                             className={`group relative cursor-pointer overflow-hidden rounded-lg transition-all hover:scale-105 ${
-                                                selectedItems.includes(item.url)
-                                                    ? 'ring-primary shadow-lg ring-2'
+                                                selectedItems.includes(convertToRelativePath(item.url))
+                                                    ? 'ring-primary shadow-lg ring-4'
                                                     : 'border-border hover:border-primary/50 border hover:shadow-md'
                                             }`}
                                             onClick={() => handleSelect(item.url)}
@@ -355,10 +360,10 @@ export default function MediaLibraryModal({ isOpen, onClose, onSelect, multiple 
                                                 />
 
                                                 {/* Selection Indicator */}
-                                                {selectedItems.includes(item.url) && (
-                                                    <div className="bg-primary/30 absolute inset-0 flex items-center justify-center">
-                                                        <div className="bg-primary text-primary-foreground rounded-full p-1.5">
-                                                            <Check className="h-4 w-4" />
+                                                {selectedItems.includes(convertToRelativePath(item.url)) && (
+                                                    <div className="bg-primary/30 absolute inset-0 z-10 flex items-center justify-center">
+                                                        <div className="bg-primary text-primary-foreground flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold shadow">
+                                                            {selectedItems.indexOf(convertToRelativePath(item.url)) + 1}
                                                         </div>
                                                     </div>
                                                 )}
@@ -382,7 +387,7 @@ export default function MediaLibraryModal({ isOpen, onClose, onSelect, multiple 
 
                     {/* Pagination */}
                     {totalPages > 1 && (
-                        <div className="flex items-center justify-between border-t pt-3">
+                        <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-t pt-3">
                             <div className="text-muted-foreground text-sm">
                                 Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, filteredMedia.length)} of {filteredMedia.length}{' '}
                                 files
@@ -432,8 +437,31 @@ export default function MediaLibraryModal({ isOpen, onClose, onSelect, multiple 
                         </div>
                     )}
 
+                    {/* Selected images: shows what is selected (on any page) and lets you remove one */}
+                    {multiple && selectedItems.length > 0 && (
+                        <div className="flex shrink-0 items-center gap-2 overflow-x-auto border-t pt-3">
+                            <span className="text-muted-foreground shrink-0 text-sm">Selected:</span>
+                            {selectedItems.map((path, index) => (
+                                <div key={path} className="relative h-14 w-14 shrink-0 overflow-hidden rounded-md border">
+                                    <img src={getImageUrl(path)} alt={`Selected image ${index + 1}`} className="h-full w-full object-cover" />
+                                    <span className="bg-primary text-primary-foreground absolute top-0.5 left-0.5 rounded-full px-1.5 text-[10px] font-bold">
+                                        {index + 1}
+                                    </span>
+                                    <button
+                                        type="button"
+                                        aria-label={`Remove selected image ${index + 1}`}
+                                        onClick={() => setSelectedItems((prev) => prev.filter((item) => item !== path))}
+                                        className="absolute top-0.5 right-0.5 rounded-full bg-black/70 p-0.5 text-white hover:bg-black"
+                                    >
+                                        <X className="h-3 w-3" />
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
                     {/* Actions */}
-                    <div className="flex items-center justify-between border-t pt-4">
+                    <div className="flex shrink-0 items-center justify-between border-t pt-4">
                         <Button variant="outline" onClick={onClose}>
                             Cancel
                         </Button>
@@ -443,9 +471,11 @@ export default function MediaLibraryModal({ isOpen, onClose, onSelect, multiple 
                                     Clear
                                 </Button>
                             )}
-                            {multiple && selectedItems.length > 0 && (
+                            {multiple && (selectedItems.length > 0 || initialSelected.length > 0) && (
                                 <Button onClick={handleConfirmSelection}>
-                                    Select {selectedItems.length} item{selectedItems.length > 1 ? 's' : ''}
+                                    {selectedItems.length > 0
+                                        ? `Use ${selectedItems.length} image${selectedItems.length > 1 ? 's' : ''}`
+                                        : 'Remove all images'}
                                 </Button>
                             )}
                         </div>

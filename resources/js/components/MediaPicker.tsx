@@ -143,6 +143,7 @@ export default function MediaPicker({
         onClose={() => setIsModalOpen(false)}
         onSelect={handleSelect}
         multiple={multiple}
+        initialSelected={multiple ? imageUrls : []}
       />
     </div>
   );

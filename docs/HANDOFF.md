@@ -94,6 +94,17 @@ User decision (2026-11-07): customers must NOT order for today; earliest deliver
   SKU line removed from dish cards (still visible in the dish detail tab).
 - Needs a new frontend build upload (no PHP change).
 
+### 3.7 Media library (product gallery picker)
+Problems: selected images were not highlighted ("3 selected" but no tick), so they could not be found to deselect;
+the confirm button fell off the bottom of the window.
+- Cause: selection stored relative paths (`/storage/...`) but the highlight compared with the absolute URL
+  (`https://freshin.space/storage/...`), which only differ since APP_URL was fixed.
+- `resources/js/components/MediaLibraryModal.tsx`: highlight uses the relative path; selected images show their
+  order number; a "Selected:" strip (with x to remove) sits above the buttons; footer rows never shrink and the grid
+  scrolls, so "Use N images" stays visible; responsive grid (3/4/6 columns).
+- Opens with the product's current gallery pre-selected (`initialSelected` from `MediaPicker.tsx`), because confirming
+  replaces the gallery. "Remove all images" appears when everything is deselected.
+
 ## 4. To make the new picker live on freshin.space
 1. Admin panel -> store settings -> **Ordering hours & delivery days**: enable, tick delivery days,
    set **Delivery booking window (days)** = `7`, set opening/closing times.
