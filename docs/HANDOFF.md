@@ -115,6 +115,13 @@ the confirm button fell off the bottom of the window.
 - Open question: user said the dashboard/store "look heavy when it loads"; images were ruled out by the user
   (already optimised). Not yet clarified (could be the dashboard entrance animations or server speed).
 
+### 3.9 Slow login
+- Cause: `AuthenticatedSessionController::logLoginHistory` called http://ip-api.com synchronously on every login
+  (3 s timeout but default 10 s connect timeout), so login waited on an outside service.
+- Fix: login history is saved immediately; the location lookup runs with `Illuminate\Support\defer()` after the
+  response is sent, with connectTimeout(2)/timeout(3). Tests: `tests/Feature/Auth/LoginLocationTest.php`.
+- Server-side speed tips (not done from here): `.env` APP_DEBUG=false, run `php artisan optimize`, PHP OPcache on.
+
 ## 4. To make the new picker live on freshin.space
 1. Admin panel -> store settings -> **Ordering hours & delivery days**: enable, tick delivery days,
    set **Delivery booking window (days)** = `7`, set opening/closing times.

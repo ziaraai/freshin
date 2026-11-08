@@ -83,10 +83,9 @@ class AuthenticatedSessionController extends Controller
             }
 
             $ip = $request->ip();
-            $locationData = $this->getLocationData($ip);
             $userAgent = $request->userAgent() ?? '';
             $browserData = parseBrowserData($userAgent);
-            $details = array_merge($locationData, $browserData, [
+            $details = array_merge(['query' => $ip], $browserData, [
                 'status' => 'success',
                 'referrer_host' => $request->headers->get('referer') ? parse_url($request->headers->get('referer'), PHP_URL_HOST) : null,
                 'referrer_path' => $request->headers->get('referer') ? parse_url($request->headers->get('referer'), PHP_URL_PATH) : null,
@@ -107,6 +106,17 @@ class AuthenticatedSessionController extends Controller
             $loginHistory->type       = $user->type;
             $loginHistory->created_by = in_array($user->type, ['superadmin', 'company']) ? $user->id : $user->created_by;
             $loginHistory->save();
+
+            // The IP location lookup calls an outside service; run it after the response is sent
+            // so a slow or unreachable service never delays the login.
+            \Illuminate\Support\defer(function () use ($loginHistory, $ip) {
+                try {
+                    $loginHistory->details = array_merge($loginHistory->details ?? [], $this->getLocationData($ip));
+                    $loginHistory->save();
+                } catch (\Throwable $e) {
+                    \Log::info('Login location lookup failed: '.$e->getMessage());
+                }
+            });
         } catch (\Exception $e) {
             // Silently ignore login history errors to prevent login disruption
             \Log::info('Login history logging failed: ' . $e->getMessage());
@@ -131,7 +141,7 @@ class AuthenticatedSessionController extends Controller
                 ];
             }
 
-            $response = Http::timeout(3)->get("http://ip-api.com/json/{$ip}");
+            $response = Http::connectTimeout(2)->timeout(3)->get("http://ip-api.com/json/{$ip}");
             if ($response->successful()) {
                 $data = $response->json();
                 return [
